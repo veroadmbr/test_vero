@@ -2305,7 +2305,7 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div>
               <Lbl>Nome *</Lbl>
-              <input value={firstName} onChange={e=>{(setFirst)(e.target.value);setErrors(p=>{...p,firstName:""})}}
+              <input value={firstName} onChange={e=>{setFirst(e.target.value);setErrors(p=>({...p,firstName:""}))}}
                 placeholder="Nome" type="text"
                 style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.firstName?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
                 onFocus={e=>e.target.style.borderColor="var(--accent)"}
@@ -2314,7 +2314,7 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
             </div>
             <div>
               <Lbl>Sobrenome *</Lbl>
-              <input value={lastName} onChange={e=>{(setLast)(e.target.value);setErrors(p=>{...p,lastName:""})}}
+              <input value={lastName} onChange={e=>{setLast(e.target.value);setErrors(p=>({...p,lastName:""}))}}
                 placeholder="Sobrenome" type="text"
                 style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.lastName?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
                 onFocus={e=>e.target.style.borderColor="var(--accent)"}
@@ -2327,7 +2327,7 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div>
               <Lbl>E-mail *</Lbl>
-              <input value={email} onChange={e=>{(setEmail)(e.target.value);setErrors(p=>{...p,email:""})}}
+              <input value={email} onChange={e=>{setEmail(e.target.value);setErrors(p=>({...p,email:""}))}}
                 placeholder="email@exemplo.com" type="email"
                 style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.email?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
                 onFocus={e=>e.target.style.borderColor="var(--accent)"}
@@ -2336,7 +2336,7 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
             </div>
             <div>
               <Lbl>Celular *</Lbl>
-              <input value={phone} onChange={e=>{(setPhone)(e.target.value);setErrors(p=>{...p,phone:""})}}
+              <input value={phone} onChange={e=>{setPhone(e.target.value);setErrors(p=>({...p,phone:""}))}}
                 placeholder="(11) 99999-9999" type="tel"
                 style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.phone?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
                 onFocus={e=>e.target.style.borderColor="var(--accent)"}
@@ -2348,7 +2348,7 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
           {/* Cargo (free text) */}
           <div>
               <Lbl>Cargo / Função</Lbl>
-              <input value={role} onChange={e=>{(setRole)(e.target.value);setErrors(p=>{...p,role:""})}}
+              <input value={role} onChange={e=>{setRole(e.target.value);setErrors(p=>({...p,role:""}))}}
                 placeholder="Ex: Cozinheiro, Garçom..." type="text"
                 style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.role?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
                 onFocus={e=>e.target.style.borderColor="var(--accent)"}

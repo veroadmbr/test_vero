@@ -2873,11 +2873,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
                 <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                   {/* Checkbox — clickable for creator */}
                   <div onClick={()=>onToggleTask&&onToggleTask(t.id)}
-                    style={{width:22,height:22,borderRadius:6,flexShrink:0,
-                    background:t.done?"var(--accent)":"var(--surface)",
-                    border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,
-                    display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,
-                    cursor:onToggleTask?"pointer":"default",transition:"all .15s"}}>
+                    style={{width:22,height:22,borderRadius:6,flexShrink:0,background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,cursor:onToggleTask?"pointer":"default",transition:"all .15s"}}>
                     {t.done&&<Icon n="check" s={14} c="#fff"/>}
                   </div>
 

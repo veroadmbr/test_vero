@@ -555,11 +555,17 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 }
 
 function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout, onEditCl, onDeleteCl, onDuplicateCl }) {
-  const myCls       = cls.filter(c => c.sid === user.id);
+  const myCls       = isLeader
+    ? cls.filter(c => c.sid === user.id || c.createdBySid === user.id)
+    : cls.filter(c => c.sid === user.id);
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
+  const sectorPeerIds = isLeader ? staff.filter(s=>!s.admin&&s.status==="approved"&&s.sector===user.sector).map(s=>s.id) : [];
   const leaderTasks = isLeader ? tasks.filter(t =>
-    t.createdBySid === user.id || adminStaffIds.includes(t.createdBySid) || (t.sid === user.id && !t.createdBySid)
+    t.createdBySid === user.id ||
+    adminStaffIds.includes(t.createdBySid) ||
+    (t.sid === user.id && !t.createdBySid) ||
+    (sectorPeerIds.includes(t.sid) && t.createdBySid === user.id)
   ) : [];
   const myAlerts = alerts.filter(a => a.sid === user.id);
   const unread   = myAlerts.filter(a=>!a.read).length;

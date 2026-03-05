@@ -91,10 +91,13 @@ const G = () => (
 const mk=(id,t,done=false,ev=null,et="",crit=false)=>({id,t,done,ev,et,crit,eo:false});
 // eslint-disable-next-line no-unused-vars
 const S0=[
-  {id:"s1",name:"Ana Lima",     firstName:"Ana",     lastName:"Lima",     email:"ana@vero.com",     phone:"(11)99100-0001",role:"Gerente",   av:"AL",score:94,admin:true, status:"approved",password:"admin123",memberRole:"admin",  sector:null},
-  {id:"s2",name:"Carlos Mendes",firstName:"Carlos",  lastName:"Mendes",   email:"carlos@vero.com",  phone:"(11)99100-0002",role:"Cozinheiro",av:"CM",score:87,admin:false,status:"approved",password:"carlos123",memberRole:"leader", sector:"sec1"},
-  {id:"s3",name:"Beatriz Santos",firstName:"Beatriz",lastName:"Santos",   email:"beatriz@vero.com", phone:"(11)99100-0003",role:"Garçonete", av:"BS",score:75,admin:false,status:"approved",password:"beatriz123",memberRole:"base",   sector:"sec2"},
-  {id:"s4",name:"Diego Ferreira",firstName:"Diego",  lastName:"Ferreira", email:"diego@vero.com",   phone:"(11)99100-0004",role:"Auxiliar",  av:"DF",score:60,admin:false,status:"approved",password:"diego123",  memberRole:"base",   sector:"sec1"},
+  {id:"s1",name:"Larissa Admin",  firstName:"Larissa", lastName:"Admin",   email:"larissa@vero.com",  phone:"",role:"Administradora",av:"LA",score:95,admin:true, status:"approved",password:"larissa123", memberRole:"admin",  sector:null},
+  {id:"s2",name:"Walter Admin",   firstName:"Walter",  lastName:"Admin",   email:"walter@vero.com",   phone:"",role:"Administrador",  av:"WA",score:92,admin:true, status:"approved",password:"walter123",  memberRole:"admin",  sector:null},
+  {id:"s3",name:"Jaqueline Lider",firstName:"Jaqueline",lastName:"Lider", email:"jaqueline@vero.com",phone:"",role:"Líder",          av:"JL",score:88,admin:false,status:"approved",password:"jaqueline123",memberRole:"leader", sector:"sec1"},
+  {id:"s4",name:"Victoria Lider", firstName:"Victoria",lastName:"Lider",  email:"victoria.l@vero.com",phone:"",role:"Líder",         av:"VL",score:85,admin:false,status:"approved",password:"victoria123", memberRole:"leader", sector:"sec2"},
+  {id:"s5",name:"Rafael Lider",   firstName:"Rafael",  lastName:"Lider",  email:"rafael@vero.com",   phone:"",role:"Líder",          av:"RL",score:82,admin:false,status:"approved",password:"rafael123",   memberRole:"leader", sector:"sec3"},
+  {id:"s6",name:"Anderson Equipe",firstName:"Anderson",lastName:"Equipe", email:"anderson@vero.com", phone:"",role:"Equipe",         av:"AE",score:70,admin:false,status:"approved",password:"anderson123", memberRole:"base",   sector:"sec1"},
+  {id:"s7",name:"Victoria Equipe",firstName:"Victoria",lastName:"Equipe", email:"victoria.e@vero.com",phone:"",role:"Equipe",        av:"VE",score:68,admin:false,status:"approved",password:"victoria123", memberRole:"base",   sector:"sec2"},
 ];
 
 

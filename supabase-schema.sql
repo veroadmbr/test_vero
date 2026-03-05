@@ -111,10 +111,13 @@ insert into sectors (id, name) values
 on conflict (id) do nothing;
 
 insert into staff (id, name, first_name, last_name, email, phone, role, av, score, admin, status, password, member_role, sector) values
-  ('s1','Ana Lima','Ana','Lima','ana@vero.com','(11)99100-0001','Gerente','AL',94,true,'approved','admin123','admin',null),
-  ('s2','Bruno Costa','Bruno','Costa','bruno@vero.com','(11)99100-0002','Cozinheiro','BC',78,false,'approved','team123','team','sec1'),
-  ('s3','Carla Nunes','Carla','Nunes','carla@vero.com','(11)99100-0003','Garçonete','CN',91,false,'approved','team123','team','sec2'),
-  ('s4','Diego Melo','Diego','Melo','diego@vero.com','(11)99100-0004','Auxiliar','DM',65,false,'approved','team123','team','sec1')
+  ('s1','Larissa Admin','Larissa','Admin','larissa@vero.com','','Administradora','LA',95,true,'approved','larissa123','admin',null),
+  ('s2','Walter Admin','Walter','Admin','walter@vero.com','','Administrador','WA',92,true,'approved','walter123','admin',null),
+  ('s3','Jaqueline Lider','Jaqueline','Lider','jaqueline@vero.com','','Líder','JL',88,false,'approved','jaqueline123','leader','sec1'),
+  ('s4','Victoria Lider','Victoria','Lider','victoria.l@vero.com','','Líder','VL',85,false,'approved','victoria123','leader','sec2'),
+  ('s5','Rafael Lider','Rafael','Lider','rafael@vero.com','','Líder','RL',82,false,'approved','rafael123','leader','sec3'),
+  ('s6','Anderson Equipe','Anderson','Equipe','anderson@vero.com','','Equipe','AE',70,false,'approved','anderson123','base','sec1'),
+  ('s7','Victoria Equipe','Victoria','Equipe','victoria.e@vero.com','','Equipe','VE',68,false,'approved','victoria123','base','sec2')
 on conflict (id) do nothing;
 
 insert into templates (id, name, icon, cat, items) values

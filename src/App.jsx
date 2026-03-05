@@ -726,7 +726,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
         <div className="ma">
           {page==="dashboard"  && <TeamDash  user={user} cls={myCls} tasks={myTasks} onOpenCl={setOpenCl} setPage={setPage} onToggleTask={onToggleTask}/>}
           {page==="checklists" && <TeamCls   cls={myCls} onOpenCl={setOpenCl} isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls} sectors={sectors} onAddCl={onAddCl} onAddTask={onAddTask}/>}
-          {page==="tasks"      && isLeader && <LeaderTasks tasks={leaderTasks} staff={sectorPeers} sectors={sectors} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowTaskM(true)} onDelTask={onDelTask}/>}
+          {page==="tasks"      && isLeader && <LeaderTasks tasks={leaderTasks} staff={staff} sectors={sectors} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowTaskM(true)} onDelTask={onDelTask}/>}
           {page==="tasks"      && !isLeader && <MyTasks tasks={myTasks} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowMyTaskM(true)} onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))onDelTask&&onDelTask(id);}}/>}
           {page==="alerts"     && <TeamAlerts alerts={myAlerts}/>}
         </div>
@@ -1320,9 +1320,7 @@ export default function App() {
           db.getStaff(), db.getChecklists(), db.getTemplates(),
           db.getAlerts(), db.getSectors(), db.getTasks(),
         ]);
-        console.log('DB LOAD - tasks:', tasksRes.data?.length, tasksRes.error);
-        console.log('DB LOAD - alerts:', alertsRes.data?.length, alertsRes.error);
-        console.log('DB LOAD - task sample:', tasksRes.data?.[0]);
+
         if (staffRes.error)   throw staffRes.error;
         if (clsRes.error)     throw clsRes.error;
         if (tplsRes.error)    throw tplsRes.error;
@@ -1335,7 +1333,6 @@ export default function App() {
         setAlerts(  alertsRes.data.map(fromDbAlert));
         setSectors( sectorsRes.data.map(fromDbSector));
         setTasks(   tasksRes.data.map(fromDbTask));
-        console.log('DB LOAD - tasks mapped:', tasksRes.data.map(fromDbTask));
       } catch (e) {
         console.error('DB load error:', e);
         setDbError(e.message || 'Erro ao conectar com o banco de dados.');
@@ -1490,8 +1487,7 @@ export default function App() {
     setTasks(p=>[nt,...p]);
     setAlerts(p=>[al,...p]);
     setAddTaskM(false);
-    console.log('addTask - saving to DB:', nt);
-    db.upsertTask(nt).then(r=>console.log('upsertTask result:', r)).catch(console.error);
+    db.upsertTask(nt).catch(console.error);
     db.upsertAlert(al).catch(console.error);
   };
   const toggleTask=(id)=>{

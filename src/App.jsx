@@ -1514,6 +1514,7 @@ export default function App() {
       {openCl   && <ClDetail cl={openCl} staff={staff} onClose={()=>{setOpenCl(null);setHlCl(null);}} onToggle={id=>toggleItem(openCl.id,id)} onEdit={(id,t)=>editTxt(openCl.id,id,t)} onAdd={t=>addItem(openCl.id,t)} onRem={id=>remItem(openCl.id,id)} onEv={(id,et)=>setEv(openCl.id,id,et)} onDelEv={id=>delEv(openCl.id,id)} onTogEv={id=>togEv(openCl.id,id)}/>}
       {addClM!==null && <AddCl staff={staff.filter(s=>!s.admin&&s.status==="approved")} tpls={tpls} pre={addClM?.tid} onClose={()=>setAddClM(null)} onAdd={addCl}/>}
       {newTplM       && <NewTpl onClose={()=>setNewTplM(false)} onCreate={createTpl}/>}
+      {editTplM      && <NewTpl tpl={editTplM} onClose={()=>setEditTplM(null)} onCreate={editTpl}/>}
       {confirm       && <Confirm msg={confirm.msg} onOk={()=>confirm.type==="tpl"?delTpl(confirm.id):confirm.type==="cl"?delCl(confirm.id):confirm.type==="task"?delTask(confirm.id):null} onCancel={()=>setConfirm(null)}/>}
       {pendingModal  && pending.length > 0 && <PendingModal pending={pending} onApprove={approveMember} onReject={rejectMember} onClose={()=>setPendingModal(false)}/>}
       {addTaskM && <AddTaskModal staff={staff.filter(s=>!s.admin&&s.status==="approved")} onClose={()=>setAddTaskM(false)} onAdd={addTask}/>}
@@ -1883,7 +1884,7 @@ function Tpls({tpls,onUse,onDel,onNew}){
               <Card key={tpl.id} style={{padding:"16px",animation:`fadeUp ${.15+i*.04}s ease`}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                   <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                    <span style={{fontSize:22}}>{tpl.icon}</span>
+                    <Icon n="description" s={22} c="var(--accent)"/>
                     <div>
                       <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14}}>{tpl.name}</div>
                       <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
@@ -3413,23 +3414,37 @@ function AddCl({staff,tpls,pre,onClose,onAdd}){
 }
 
 /* ═══ NEW TEMPLATE ══════════════════════════════════════════════════════════ */
-function NewTpl({onClose,onCreate}){
-  const [name,setName]=useState("");
-  const [cat,setCat]=useState("Operacional");
-  const [items,setItems]=useState(["",""]);
+function NewTpl({tpl, onClose, onCreate}){
+  const isEdit = !!tpl;
+  const [name, setName]   = useState(tpl?.name || "");
+  const [cat,  setCat]    = useState(tpl?.cat  || "Operacional");
+  const [items,setItems]  = useState(tpl?.items?.length ? tpl.items : ["",""]);
   const setIt=(i,v)=>setItems(p=>p.map((x,idx)=>idx===i?v:x));
   const addRow=()=>setItems(p=>[...p,""]);
   const remRow=i=>setItems(p=>p.filter((_,idx)=>idx!==i));
   const valid=name.trim()&&items.filter(i=>i.trim()).length>=1;
+
+  const handleSave = () => {
+    if (!valid) return;
+    const data = {
+      ...(isEdit ? tpl : {}),
+      name: name.trim(),
+      icon: "description",
+      cat,
+      items: items.filter(i=>i.trim()),
+    };
+    onCreate(data);
+  };
+
   return(
     <Ov onClick={onClose}>
       <Sheet onClick={e=>e.stopPropagation()}>
         <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:18,marginBottom:18,display:"flex",alignItems:"center",gap:8}}>
-          <Icon n="view_quilt" s={22} c="var(--accent)"/>Novo Template
+          <Icon n="view_quilt" s={22} c="var(--accent)"/>{isEdit ? "Editar Template" : "Novo Template"}
         </div>
         <Lbl>Nome</Lbl>
         <Inp val={name} onChange={e=>setName(e.target.value)} ph="Ex: Pre-abertura do bar"/>
-                <Lbl>Categoria</Lbl>
+        <Lbl>Categoria</Lbl>
         <Sel val={cat} onChange={e=>setCat(e.target.value)}>
           {CATS.map(c=><option key={c}>{c}</option>)}
         </Sel>
@@ -3442,14 +3457,14 @@ function NewTpl({onClose,onCreate}){
               {items.length>1&&<Btn sz="s" v="g" onClick={()=>remRow(i)}><Icon n="close" s={20}/></Btn>}
             </div>
           ))}
-          <button onClick={addRow} style={{alignSelf:"flex-start",background:"none",border:"1px dashed var(--border2)",borderRadius:"var(--rs)",padding:"6px 12px",color:"var(--sub)",fontSize:12,cursor:"pointer",fontWeight:500,marginTop:2,display:"flex",alignItems:"center",gap:4,transition:"all .15s"}}
+          <button onClick={addRow} style={{alignSelf:"flex-start",background:"none",border:"1px dashed var(--border2)",borderRadius:"var(--rs)",padding:"6px 12px",fontSize:12,color:"var(--sub)",cursor:"pointer",display:"flex",alignItems:"center",gap:4,marginTop:4}}
             onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--sub)";}}>
             <Icon n="add" s={20}/>Adicionar item
           </button>
         </div>
-        <Btn onClick={()=>valid&&onCreate({name:name.trim(),icon:"description",cat,items:items.filter(i=>i.trim())})} dis={!valid} style={{width:"100%",justifyContent:"center",marginTop:22,padding:"13px"}}>
-          <Icon n="check" s={20}/>Criar Template
+        <Btn onClick={handleSave} dis={!valid} style={{marginTop:16}}>
+          <Icon n="check" s={20}/>{isEdit ? "Salvar alterações" : "Criar Template"}
         </Btn>
       </Sheet>
     </Ov>

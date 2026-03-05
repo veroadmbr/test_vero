@@ -89,6 +89,18 @@ const G = () => (
 
 /* ─── SEED DATA ──────────────────────────────────────────────────────────── */
 const mk=(id,t,done=false,ev=null,et="",crit=false)=>({id,t,done,ev,et,crit,eo:false});
+const S0=[
+  {id:"s1",name:"Ana Lima",     firstName:"Ana",     lastName:"Lima",     email:"ana@vero.com",     phone:"(11)99100-0001",role:"Gerente",   av:"AL",score:94,admin:true, status:"approved",password:"admin123",memberRole:"admin",  sector:null},
+  {id:"s2",name:"Carlos Mendes",firstName:"Carlos",  lastName:"Mendes",   email:"carlos@vero.com",  phone:"(11)99100-0002",role:"Cozinheiro",av:"CM",score:87,admin:false,status:"approved",password:"carlos123",memberRole:"leader", sector:"sec1"},
+  {id:"s3",name:"Beatriz Santos",firstName:"Beatriz",lastName:"Santos",   email:"beatriz@vero.com", phone:"(11)99100-0003",role:"Garçonete", av:"BS",score:75,admin:false,status:"approved",password:"beatriz123",memberRole:"base",   sector:"sec2"},
+  {id:"s4",name:"Diego Ferreira",firstName:"Diego",  lastName:"Ferreira", email:"diego@vero.com",   phone:"(11)99100-0004",role:"Auxiliar",  av:"DF",score:60,admin:false,status:"approved",password:"diego123",  memberRole:"base",   sector:"sec1"},
+];
+
+
+const CATS=["Operacional","Financeiro","Higiene","Seguranca","Atendimento","Estoque","Outro"];
+
+const EMOJIS=["🌅","💰","🧹","🌡️","🍽️","📦","🔥","🧊","🧴","🛒","📋","⚙️","🔍","🏪","🚿","🧂","🥩","🍳","📊","🎯"];
+
 const FREQ_OPTS=[
   {id:"daily",      label:"Diariamente",  icon:"today",          hasDays:false},
   {id:"twice_week", label:"2x por semana",icon:"date_range",     hasDays:true},

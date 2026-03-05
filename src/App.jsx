@@ -1890,6 +1890,79 @@ function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onT
 }
 
 /* ═══ TEMPLATES ═════════════════════════════════════════════════════════════ */
+function TplCard({tpl,onUse,onDel,onEdit,onDuplicate}){
+  const [open,setOpen]=React.useState(false);
+  const ref=React.useRef(null);
+  React.useEffect(()=>{
+    if(!open)return;
+    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[open]);
+  const MENU=[
+    {icon:"play_arrow",  label:"Usar Template", action:()=>{onUse(tpl.id);setOpen(false);}},
+    {icon:"content_copy",label:"Duplicar",       action:()=>{onDuplicate(tpl);setOpen(false);}},
+    {icon:"edit",        label:"Editar",          action:()=>{onEdit(tpl);setOpen(false);}},
+    {icon:"delete_outline",label:"Deletar",       action:()=>{onDel(tpl);setOpen(false);}, red:true},
+  ];
+  return(
+    <Card style={{padding:"16px",position:"relative"}}>
+      {/* Header row */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+        <div style={{display:"flex",gap:10,alignItems:"center",flex:1,minWidth:0}}>
+          <Icon n="description" s={22} c="var(--accent)" style={{flexShrink:0}}/>
+          <div style={{minWidth:0}}>
+            <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{tpl.name}</div>
+            <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
+              <Icon n="assignment" s={12} c="var(--muted)"/>{tpl.items.length} itens
+            </div>
+          </div>
+        </div>
+        {/* 3-dot menu button */}
+        <div ref={ref} style={{position:"relative",flexShrink:0,marginLeft:8}}>
+          <button onClick={()=>setOpen(o=>!o)}
+            style={{background:open?"var(--abg)":"none",border:"1px solid "+(open?"var(--accent)":"var(--border)"),
+              borderRadius:6,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",
+              cursor:"pointer",transition:"all .15s",color:open?"var(--accent)":"var(--muted)"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="var(--bg)";e.currentTarget.style.borderColor="var(--border2)"}}
+            onMouseLeave={e=>{if(!open){e.currentTarget.style.background="none";e.currentTarget.style.borderColor="var(--border)"}}}>
+            <Icon n="more_vert" s={20}/>
+          </button>
+          {open&&(
+            <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,background:"var(--surface)",
+              border:"1px solid var(--border)",borderRadius:"var(--r)",boxShadow:"var(--shm)",
+              minWidth:180,zIndex:200,overflow:"hidden"}}>
+              {MENU.map((m,i)=>(
+                <button key={i} onClick={m.action}
+                  style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
+                    background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:500,
+                    color:m.red?"var(--red)":"var(--text)",textAlign:"left",transition:"background .1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background=m.red?"var(--rbg)":"var(--bg)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                  <Icon n={m.icon} s={18} c={m.red?"var(--red)":"var(--sub)"}/>{m.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Items preview */}
+      <div style={{marginBottom:14,display:"flex",flexDirection:"column",gap:4}}>
+        {tpl.items.slice(0,3).map((it,i)=>(
+          <div key={i} style={{fontSize:12,color:"var(--sub)",display:"flex",gap:6,alignItems:"flex-start"}}>
+            <Icon n="check" s={13} c="var(--muted)" style={{marginTop:1,flexShrink:0}}/>{it}
+          </div>
+        ))}
+        {tpl.items.length>3&&<div style={{fontSize:11,color:"var(--muted)",marginLeft:19}}>+{tpl.items.length-3} mais</div>}
+      </div>
+      {/* Use button */}
+      <Btn v="o" onClick={()=>onUse(tpl.id)} style={{width:"100%",justifyContent:"center"}}>
+        <Icon n="play_arrow" s={18}/>Usar Template
+      </Btn>
+    </Card>
+  );
+}
+
 function Tpls({tpls,onUse,onDel,onEdit,onDuplicate,onNew}){
   const cats=[...new Set(tpls.map(t=>t.cat))];
   return(
@@ -1906,38 +1979,7 @@ function Tpls({tpls,onUse,onDel,onEdit,onDuplicate,onNew}){
           <div style={{fontSize:11,fontWeight:700,color:"var(--sub)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>{cat}</div>
           <div className="cg" style={{display:"grid",gap:12}}>
             {tpls.filter(t=>t.cat===cat).map((tpl,i)=>(
-              <Card key={tpl.id} style={{padding:"16px",animation:`fadeUp ${.15+i*.04}s ease`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                    <Icon n="description" s={22} c="var(--accent)"/>
-                    <div>
-                      <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14}}>{tpl.name}</div>
-                      <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
-                        <Icon n="assignment" s={12} c="var(--muted)"/>{tpl.items.length} itens
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div style={{marginBottom:14,display:"flex",flexDirection:"column",gap:4}}>
-                  {tpl.items.slice(0,3).map((it,i)=>(
-                    <div key={i} style={{fontSize:12,color:"var(--sub)",display:"flex",gap:6,alignItems:"flex-start"}}>
-                      <Icon n="check" s={13} c="var(--muted)" style={{marginTop:1,flexShrink:0}}/>{it}
-                    </div>
-                  ))}
-                  {tpl.items.length>3&&<div style={{fontSize:11,color:"var(--muted)",marginLeft:19}}>+{tpl.items.length-3} mais</div>}
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <Btn v="o" onClick={()=>onUse(tpl.id)} style={{flex:1,justifyContent:"center"}}>
-                    <Icon n="play_arrow" s={18}/>Usar Template
-                  </Btn>
-                  <Btn v="o" onClick={()=>onDuplicate(tpl)} style={{flex:1,justifyContent:"center"}}>
-                    <Icon n="content_copy" s={18}/>Duplicar
-                  </Btn>
-                  <Btn v="o" onClick={()=>onEdit(tpl)} style={{flex:1,justifyContent:"center"}}>
-                    <Icon n="edit" s={18}/>Editar
-                  </Btn>
-                </div>
-              </Card>
+              <TplCard key={tpl.id} tpl={tpl} onUse={onUse} onDel={onDel} onEdit={onEdit} onDuplicate={onDuplicate}/>
             ))}
           </div>
         </div>

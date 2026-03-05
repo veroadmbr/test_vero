@@ -1120,6 +1120,7 @@ export default function App() {
   const [openCl,  setOpenCl]  = useState(null);
   const [addClM,  setAddClM]  = useState(null);
   const [newTplM, setNewTplM] = useState(false);
+  const [editTplM, setEditTplM] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [hlCl,    setHlCl]    = useState(null);
   const [pendingModal, setPendingModal] = useState(false);
@@ -1318,6 +1319,11 @@ export default function App() {
     setTpls(p=>[...p,nt]);
     setNewTplM(false);
     (async()=>{const r=await db.upsertTemplate(nt);if(r?.error)console.error(r.error)})();
+  };
+  const editTpl=(tpl)=>{
+    setTpls(p=>p.map(t=>t.id===tpl.id?tpl:t));
+    setEditTplM(null);
+    (async()=>{const r=await db.upsertTemplate(tpl);if(r?.error)console.error(r.error)})();
   };
   const delCl=(id)=>{
     setCls(p=>p.filter(c=>c.id!==id));

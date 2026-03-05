@@ -794,16 +794,13 @@ function TeamDash({ user, cls, tasks, onOpenCl, setPage, onToggleTask }) {
         </p>
       </div>
 
-      {/* 2 cards: tarefas */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-        <StatCard icon="pending_actions" label="Tarefas Pendentes"  val={tasksPending} color="var(--warn)"   bg="var(--wbg)" onClick={()=>setPage("tasks")}/>
-        <StatCard icon="task_alt"        label="Tarefas Concluídas" val={tasksDone}    color="var(--accent)" bg="var(--abg)" onClick={()=>setPage("tasks")}/>
-      </div>
-
-      {/* 2 cards: checklists */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:4}}>
-        <StatCard icon="checklist"    label="Checklists Pendentes"  val={clsPending} color="var(--blue)"   bg="var(--bbg)" onClick={()=>setPage("checklists")}/>
-        <StatCard icon="check_circle" label="Checklists Concluídos" val={clsDone}    color="var(--accent)" bg="var(--abg)" onClick={()=>setPage("checklists")}/>
+      {/* 4 cards em linha — 2x2 no mobile */}
+      <style>{`@media(min-width:600px){.team-stat-grid{grid-template-columns:repeat(4,1fr)!important;}}`}</style>
+      <div className="team-stat-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:4}}>
+        <StatCard icon="pending_actions" label="Tarefas Pendentes"   val={tasksPending} color="var(--warn)"   bg="var(--wbg)" onClick={()=>setPage("tasks")}/>
+        <StatCard icon="task_alt"        label="Tarefas Concluídas"  val={tasksDone}    color="var(--accent)" bg="var(--abg)" onClick={()=>setPage("tasks")}/>
+        <StatCard icon="checklist"       label="Checklists Pendentes" val={clsPending}  color="var(--blue)"   bg="var(--bbg)" onClick={()=>setPage("checklists")}/>
+        <StatCard icon="check_circle"    label="Checklists Concluídos" val={clsDone}    color="var(--accent)" bg="var(--abg)" onClick={()=>setPage("checklists")}/>
       </div>
 
       {/* Empty */}

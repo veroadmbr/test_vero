@@ -784,7 +784,7 @@ function TeamCls({ cls, user, onOpenCl, isLeader, sectorPeers, tpls, sectors, on
             const p = pct(cl.items);
             const canManage = isLeader;
             return(
-              <TeamClCard key={cl.id} cl={cl} p={p} isOwner={canManage}
+              <TeamClCard key={cl.id} cl={cl} p={p} isOwner={canManage} staff={sectorPeers}
                 onOpen={()=>onOpenCl(cl)}
                 onEdit={canManage&&onEditCl ? ()=>onOpenEditCl(cl) : null}
                 onDuplicate={canManage&&onDuplicateCl ? ()=>onDuplicateCl(cl) : null}
@@ -799,7 +799,7 @@ function TeamCls({ cls, user, onOpenCl, isLeader, sectorPeers, tpls, sectors, on
   );
 }
 
-function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete }) {
+function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete, staff }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef(null);
   useEffect(()=>{
@@ -865,8 +865,11 @@ function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete }) {
       </div>
       <div onClick={onOpen} style={{cursor:"pointer"}}>
         <Bar v={p} h={6}/>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12,color:"var(--sub)"}}>
-          <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="check_circle_outline" s={14} c="var(--muted)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens</span>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12,color:"var(--sub)",flexWrap:"wrap",gap:4}}>
+          <span style={{display:"flex",alignItems:"center",gap:3}}>
+            <Icon n="check_circle_outline" s={14} c="var(--muted)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens
+            {staff&&cl.createdBySid&&cl.sid!==cl.createdBySid&&(()=>{const m=staff.find(s=>s.id===cl.sid);return m?<span style={{marginLeft:6,display:"flex",alignItems:"center",gap:3,color:"var(--blue)",fontSize:11}}><Icon n="person" s={12} c="var(--blue)"/>{m.name.split(" ")[0]}</span>:null;})()}
+          </span>
           <span style={{fontFamily:"var(--fh)",fontWeight:700,color:p===100?"var(--accent)":"var(--text)"}}>{p}%</span>
         </div>
       </div>
@@ -950,7 +953,12 @@ function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv }) {
           </div>
           <Btn v="g" sz="s" onClick={onClose} style={{padding:4}}><Icon n="close" s={20}/></Btn>
         </div>
-
+        {readOnly&&(
+          <div style={{background:"var(--bbg)",border:"1px solid var(--bbr)",borderRadius:"var(--rs)",padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:12,color:"var(--blue)"}}>
+            <Icon n="visibility" s={16} c="var(--blue)"/>
+            <span>Você criou esta checklist. Apenas visualização — os itens são marcados pelo responsável.</span>
+          </div>
+        )}
         <div style={{marginBottom:18}}>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--sub)",marginBottom:5}}>
             <span>{cl.items.filter(i=>i.done).length} de {cl.items.length} itens</span>
@@ -976,11 +984,11 @@ function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv }) {
                     <Icon n="attach_file" s={18} c="var(--accent)"/>
                     <Icon n={item.eo?"expand_less":"expand_more"} s={18} c="var(--accent)"/>
                   </button>
-                ) : (
+                ) : !readOnly ? (
                   <Btn sz="s" v="g" onClick={()=>{ setEvFor(evFor===item.id?null:item.id); setEvText(""); setEvImg(null); setEvMode("text"); }}>
                     <Icon n="attach_file" s={18}/>
                   </Btn>
-                )}
+                ) : null}
               </div>
 
               {/* Evidence entry panel */}

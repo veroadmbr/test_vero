@@ -159,7 +159,9 @@ const NAV_TEAM_FULL=[
 
 /* ─── SHARED PRIMITIVES ──────────────────────────────────────────────────── */
 const Av=({v,sz=34,bg="var(--border)",co="#4b5563"})=>(
-  <div style={{width:sz,height:sz,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--fh)",fontWeight:600,fontSize:sz*.36,color:co,flexShrink:0}}>{v}</div>
+  typeof v==="string"&&(v.startsWith("data:")||v.startsWith("http"))
+    ? <img src={v} alt="" style={{width:sz,height:sz,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:"1.5px solid var(--border)"}}/>
+    : <div style={{width:sz,height:sz,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--fh)",fontWeight:600,fontSize:sz*.36,color:co,flexShrink:0}}>{v}</div>
 );
 const Pill=({ch,c="var(--accent)",b="var(--abg)",br="var(--abr)"})=>(
   <span style={{background:b,color:c,border:`1px solid ${br}`,borderRadius:100,padding:"2px 9px",fontSize:11,fontWeight:600,whiteSpace:"nowrap"}}>{ch}</span>
@@ -206,6 +208,180 @@ const Confirm=({msg,onOk,onCancel})=>(
   </Ov>
 );
 
+
+
+/* ── ProfileModal ───────────────────────────────────────────────────────── */
+function ProfileModal({ user, onClose, onSave }) {
+  const [tab,      setTab]     = useState("photo");
+  const [phone,    setPhone]   = useState(user.phone||"");
+  const [photo,    setPhoto]   = useState(null);
+  const [curPass,  setCurPass] = useState("");
+  const [newPass,  setNewPass] = useState("");
+  const [confPass, setConf]    = useState("");
+  const [showCur,  setShowCur] = useState(false);
+  const [showNew,  setShowNew] = useState(false);
+  const [err,      setErr]     = useState("");
+  const [ok,       setOk]      = useState("");
+  const [saving,   setSaving]  = useState(false);
+
+  const loadPhoto = (file) => {
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = e => setPhoto(e.target.result);
+    r.readAsDataURL(file);
+  };
+
+  const save = async () => {
+    setErr(""); setOk(""); setSaving(true);
+    let updated = { ...user };
+    if (tab === "photo") {
+      if (!photo) { setErr("Selecione uma foto."); setSaving(false); return; }
+      updated.av = photo;
+    } else if (tab === "phone") {
+      if (!phone.trim()) { setErr("Digite um telefone válido."); setSaving(false); return; }
+      updated.phone = phone.trim();
+    } else {
+      if (curPass !== user.password) { setErr("Senha atual incorreta."); setSaving(false); return; }
+      if (newPass.length < 6)        { setErr("Nova senha: mínimo 6 caracteres."); setSaving(false); return; }
+      if (newPass !== confPass)       { setErr("As senhas não coincidem."); setSaving(false); return; }
+      updated.password = newPass;
+    }
+    const res = await db.upsertStaff(updated);
+    if (res?.error) { setErr("Erro ao salvar. Tente novamente."); setSaving(false); return; }
+    setOk("Salvo com sucesso!"); setSaving(false);
+    onSave(updated);
+    setTimeout(onClose, 800);
+  };
+
+  const TAB = [
+    { id:"photo",    icon:"add_a_photo",  label:"Foto"    },
+    { id:"phone",    icon:"phone_iphone", label:"Telefone" },
+    { id:"password", icon:"lock_outline", label:"Senha"   },
+  ];
+
+  const avatar = photo || user.av;
+  const isPhoto = typeof avatar === "string" && avatar.startsWith("data:");
+
+  return (
+    <Ov onClick={onClose}>
+      <Sheet onClick={e=>e.stopPropagation()} style={{maxWidth:420,padding:"28px 24px"}}>
+
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:22}}>
+          <div style={{position:"relative",cursor:"pointer"}} onClick={()=>setTab("photo")}>
+            {isPhoto
+              ? <img src={avatar} alt="" style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:"2.5px solid var(--accent)"}}/>
+              : <Av v={avatar} sz={56} bg="var(--abg)" co="var(--accent)"/>
+            }
+            <div style={{position:"absolute",bottom:0,right:0,width:20,height:20,background:"var(--accent)",
+              borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--surface)"}}>
+              <Icon n="edit" s={11} c="#fff"/>
+            </div>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:16}}>{user.name}</div>
+            <div style={{fontSize:12,color:"var(--sub)",marginTop:2}}>{user.role}</div>
+            <div style={{fontSize:11,color:"var(--muted)",marginTop:1}}>{user.email}</div>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--muted)"}}>
+            <Icon n="close" s={20} c="var(--muted)"/>
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{display:"flex",gap:4,marginBottom:20,background:"var(--bg)",borderRadius:"var(--rs)",padding:4}}>
+          {TAB.map(t=>(
+            <button key={t.id} onClick={()=>{setTab(t.id);setErr("");setOk("");}}
+              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                padding:"8px 6px",border:"none",borderRadius:"calc(var(--rs) - 2px)",cursor:"pointer",
+                transition:"all .15s",fontSize:12,fontWeight:tab===t.id?600:400,
+                background:tab===t.id?"var(--surface)":"transparent",
+                color:tab===t.id?"var(--accent)":"var(--sub)",
+                boxShadow:tab===t.id?"0 1px 4px rgba(0,0,0,.08)":"none"}}>
+              <Icon n={t.icon} s={15} c={tab===t.id?"var(--accent)":"var(--sub)"}/>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Photo tab ── */}
+        {tab==="photo"&&(
+          <label style={{display:"block",cursor:"pointer",border:"2px dashed var(--border2)",borderRadius:"var(--r)",
+            padding:"24px 16px",textAlign:"center",transition:"border-color .15s"}}
+            onDragOver={e=>{e.preventDefault();e.currentTarget.style.borderColor="var(--accent)"}}
+            onDragLeave={e=>e.currentTarget.style.borderColor="var(--border2)"}
+            onDrop={e=>{e.preventDefault();loadPhoto(e.dataTransfer.files[0])}}>
+            {photo
+              ? <img src={photo} alt="preview" style={{maxWidth:"100%",maxHeight:160,borderRadius:"var(--rs)",objectFit:"cover"}}/>
+              : <>
+                  <Icon n="add_a_photo" s={38} c="var(--muted)"/>
+                  <div style={{fontSize:13,color:"var(--sub)",marginTop:8,fontWeight:500}}>Clique ou arraste uma foto</div>
+                  <div style={{fontSize:11,color:"var(--muted)",marginTop:3}}>JPG, PNG, WEBP</div>
+                </>
+            }
+            <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>loadPhoto(e.target.files[0])}/>
+          </label>
+        )}
+
+        {/* ── Phone tab ── */}
+        {tab==="phone"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{fontSize:12,color:"var(--muted)",background:"var(--bg)",borderRadius:"var(--rs)",padding:"8px 12px"}}>
+              Atual: <strong>{user.phone||"não cadastrado"}</strong>
+            </div>
+            <Lbl>Novo telefone</Lbl>
+            <Inp val={phone} onChange={e=>setPhone(e.target.value)} ph="(00) 00000-0000"/>
+          </div>
+        )}
+
+        {/* ── Password tab ── */}
+        {tab==="password"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <div>
+              <Lbl>Senha atual</Lbl>
+              <div style={{position:"relative"}}>
+                <Inp val={curPass} onChange={e=>setCurPass(e.target.value)} ph="Digite sua senha atual"
+                  type={showCur?"text":"password"} style={{paddingRight:38}}/>
+                <button onClick={()=>setShowCur(p=>!p)} style={{position:"absolute",right:8,top:"50%",
+                  transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:2}}>
+                  <Icon n={showCur?"visibility_off":"visibility"} s={17} c="var(--muted)"/>
+                </button>
+              </div>
+            </div>
+            <div>
+              <Lbl>Nova senha</Lbl>
+              <div style={{position:"relative"}}>
+                <Inp val={newPass} onChange={e=>setNewPass(e.target.value)} ph="Mínimo 6 caracteres"
+                  type={showNew?"text":"password"} style={{paddingRight:38}}/>
+                <button onClick={()=>setShowNew(p=>!p)} style={{position:"absolute",right:8,top:"50%",
+                  transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:2}}>
+                  <Icon n={showNew?"visibility_off":"visibility"} s={17} c="var(--muted)"/>
+                </button>
+              </div>
+            </div>
+            <div>
+              <Lbl>Confirmar nova senha</Lbl>
+              <Inp val={confPass} onChange={e=>setConf(e.target.value)} ph="Repita a nova senha" type="password"/>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback */}
+        {err&&<div style={{marginTop:14,padding:"8px 12px",background:"var(--rbg)",border:"1px solid var(--rbr)",
+          borderRadius:"var(--rs)",fontSize:12,color:"var(--red)",display:"flex",alignItems:"center",gap:6}}>
+          <Icon n="error_outline" s={14} c="var(--red)"/>{err}</div>}
+        {ok&&<div style={{marginTop:14,padding:"8px 12px",background:"var(--gbg)",border:"1px solid var(--gbr)",
+          borderRadius:"var(--rs)",fontSize:12,color:"var(--accent)",display:"flex",alignItems:"center",gap:6}}>
+          <Icon n="check_circle_outline" s={14} c="var(--accent)"/>{ok}</div>}
+
+        <div style={{marginTop:20,display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <Btn v="o" onClick={onClose}>Cancelar</Btn>
+          <Btn onClick={save} dis={saving}>{saving?"Salvando...":"Salvar"}</Btn>
+        </div>
+      </Sheet>
+    </Ov>
+  );
+}
 
 /* ── LightBox ──────────────────────────────────────────────────────────── */
 const LightBox = ({src, onClose}) => (
@@ -575,7 +751,7 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
   );
 }
 
-function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout, onEditCl, onDeleteCl, onDuplicateCl }) {
+function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onProfileSave, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout, onEditCl, onDeleteCl, onDuplicateCl }) {
   const myCls       = isLeader
     ? cls.filter(c => c.sid === user.id || c.createdBySid === user.id)
     : cls.filter(c => c.sid === user.id);
@@ -593,9 +769,11 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
   const [page,   setPage]   = useState("dashboard");
   const [openCl,     setOpenCl]     = useState(null);
   const [editClM,    setEditClM]    = useState(null);
+  const [profileM,   setProfileM]   = useState(false);
   const [showTaskM,  setShowTaskM]  = useState(false);
   const [showMyTaskM, setShowMyTaskM] = useState(false);
   const [userMenu,    setUserMenu]    = useState(false);
+  const [profileM,    setProfileM]    = useState(false);
 
   const NI = ({item}) => {
     const active = page === item.id;
@@ -624,7 +802,9 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
           <div style={{position:"relative"}}>
             <button onClick={()=>setUserMenu(p=>!p)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
-              <Av v={user.av} sz={28} bg={isLeader?"var(--bbg)":"var(--abg)"} co={isLeader?"var(--blue)":"var(--accent)"}/>
+              <div onClick={e=>{e.stopPropagation();setProfileM(true);setUserMenu(false);}} style={{cursor:"pointer",lineHeight:0}}>
+                <Av v={user.av} sz={28} bg={isLeader?"var(--bbg)":"var(--abg)"} co={isLeader?"var(--blue)":"var(--accent)"}/>
+              </div>
               <span style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>{user.name.split(" ")[0]}</span>
               <Icon n={userMenu?"expand_less":"expand_more"} s={16} c="var(--muted)"/>
             </button>
@@ -660,7 +840,13 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
           <Hr/>
           <div style={{padding:"12px 16px"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-              <Av v={user.av} sz={32} bg={isLeader?"var(--bbg)":"var(--bbg)"} co={isLeader?"var(--blue)":"var(--blue)"}/>
+              <div onClick={()=>setProfileM(true)} style={{cursor:"pointer",position:"relative"}}>
+                <Av v={user.av} sz={32} bg={isLeader?"var(--bbg)":"var(--bbg)"} co={isLeader?"var(--blue)":"var(--blue)"}/>
+                <div style={{position:"absolute",bottom:-1,right:-1,width:14,height:14,background:"var(--accent)",
+                  borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",border:"1.5px solid var(--surface)"}}>
+                  <Icon n="edit" s={8} c="#fff"/>
+                </div>
+              </div>
               <div>
                 <div style={{fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:5}}>
                   {user.name}
@@ -718,6 +904,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
       )}
       {showTaskM && isLeader && <AddTaskModal staff={sectorPeers} onClose={()=>setShowTaskM(false)} onAdd={(task)=>{onAddTask({...task,createdBySid:user.id});setShowTaskM(false);}}/> }
       {showMyTaskM && !isLeader && <AddTaskModal staff={[user]} onClose={()=>setShowMyTaskM(false)} onAdd={(task)=>{onAddTask&&onAddTask({...task,sid:user.id,createdBySid:user.id});setShowMyTaskM(false);}}/>}
+      {profileM && <ProfileModal user={user} onClose={()=>setProfileM(false)} onSave={(u)=>{onProfileSave(u);setProfileM(false);}}/> }
       {editClM && onEditCl && <EditClModal cl={editClM} staff={sectorPeers||[]} onClose={()=>setEditClM(null)} onSave={(updated)=>{onEditCl(updated);setEditClM(null);}}/> }
     </>
   );
@@ -1523,6 +1710,17 @@ export default function App() {
     const isLeader = session.role==="leader";
     const mySector = isLeader ? session.user.sector : null;
     const sectorPeers = isLeader ? staff.filter(s=>s.sector===mySector&&s.status==="approved"&&!s.admin) : [];
+    const handleProfileSave = (updated) => {
+      setSession(prev => ({ ...prev, user: updated }));
+      setStaff(p => p.map(s => s.id === updated.id ? updated : s));
+      try {
+        const saved = sessionStorage.getItem("vero_session");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          sessionStorage.setItem("vero_session", JSON.stringify({ ...parsed, data: updated }));
+        }
+      } catch {}
+    };
     return <TeamView user={session.user} cls={cls} alerts={alerts} tasks={tasks}
       sectors={sectors} staff={staff}
       isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls}
@@ -1535,7 +1733,8 @@ export default function App() {
       onAddTask={(task)=>addTask({...task,createdBySid:session.user.id})}
       onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))delTask(id);}}
       onMarkAlertRead={(id)=>{ setAlerts(p=>p.map(a=>{ if(a.id!==id) return a; const u={...a,read:true}; (async()=>{const r=await db.upsertAlert(u);if(r?.error)console.error(r.error)})(); return u; })); }}
-      onLogout={()=>setSession(null)}/>;
+      onLogout={()=>setSession(null)}
+      onProfileSave={handleProfileSave}/>;
   }
 
   /* ── Admin shell ── */
@@ -1565,7 +1764,9 @@ export default function App() {
           <div style={{position:"relative"}}>
             <button onClick={()=>setUserMenu(p=>!p)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
-              <Av v={session.user.av} sz={28} bg="var(--abg)" co="var(--accent)"/>
+              <div onClick={e=>{e.stopPropagation();setProfileM(true);setUserMenu(false);}} style={{cursor:"pointer",lineHeight:0}}>
+                <Av v={session.user.av} sz={28} bg="var(--abg)" co="var(--accent)"/>
+              </div>
               <span style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>{session.user.name.split(" ")[0]}</span>
               <Icon n={userMenu?"expand_less":"expand_more"} s={16} c="var(--muted)"/>
             </button>
@@ -1598,7 +1799,13 @@ export default function App() {
           <Hr/>
           <div style={{padding:"12px 16px"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-              <Av v={session.user.av} sz={32} bg="var(--abg)" co="var(--accent)"/>
+              <div onClick={()=>setProfileM(true)} style={{cursor:"pointer",position:"relative"}}>
+                <Av v={session.user.av} sz={32} bg="var(--abg)" co="var(--accent)"/>
+                <div style={{position:"absolute",bottom:-1,right:-1,width:14,height:14,background:"var(--accent)",
+                  borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",border:"1.5px solid var(--surface)"}}>
+                  <Icon n="edit" s={8} c="#fff"/>
+                </div>
+              </div>
               <div>
                 <div style={{fontSize:13,fontWeight:600}}>{session.user.name}</div>
                 <div style={{fontSize:11,color:"var(--muted)"}}>Administrador</div>
@@ -1638,6 +1845,12 @@ export default function App() {
       {editTplM      && <NewTpl tpl={editTplM} onClose={()=>setEditTplM(null)} onCreate={editTpl}/>}
         {editClM       && <EditClModal cl={editClM} staff={staff} onClose={()=>setEditClM(null)} onSave={editCl}/>}
       {confirm       && <Confirm msg={confirm.msg} onOk={()=>confirm.type==="tpl"?delTpl(confirm.id):confirm.type==="cl"?delCl(confirm.id):confirm.type==="task"?delTask(confirm.id):null} onCancel={()=>setConfirm(null)}/>}
+      {profileM && session && <ProfileModal user={session.user} onClose={()=>setProfileM(false)} onSave={(updated)=>{
+        setSession(prev=>({...prev,user:updated}));
+        setStaff(p=>p.map(s=>s.id===updated.id?updated:s));
+        try{const sv=sessionStorage.getItem("vero_session");if(sv){const pr=JSON.parse(sv);sessionStorage.setItem("vero_session",JSON.stringify({...pr,data:updated}));}}catch{}
+        setProfileM(false);
+      }}/>}
       {pendingModal  && pending.length > 0 && <PendingModal pending={pending} onApprove={approveMember} onReject={rejectMember} onClose={()=>setPendingModal(false)}/>}
       {addTaskM && <AddTaskModal staff={staff.filter(s=>!s.admin&&s.status==="approved")} onClose={()=>setAddTaskM(false)} onAdd={addTask}/>}
       {editMemberM && <EditMemberModal member={editMemberM} sectors={sectors} onClose={()=>setEditMemberM(null)} onSave={updateMember}/>}

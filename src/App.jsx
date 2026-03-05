@@ -450,9 +450,6 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
   const [err,      setErr]     = useState("");
   const [loading,  setLoading] = useState(false);
 
-  const admins  = allStaff.filter(s => s.admin  && s.status === "approved");
-  const team    = allStaff.filter(s => !s.admin && s.status === "approved");
-
   const reset = (m) => { setMode(m); setEmail(""); setPass(""); setErr(""); setShowP(false); };
 
   const submit = async () => {

@@ -555,10 +555,7 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 }
 
 function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout, onEditCl, onDeleteCl, onDuplicateCl }) {
-  const sectorPeerIds = sectorPeers ? sectorPeers.map(s=>s.id) : [user.id];
-  const myCls       = isLeader
-    ? cls.filter(c => sectorPeerIds.includes(c.sid) || c.createdBySid === user.id)
-    : cls.filter(c => c.sid === user.id);
+  const myCls       = cls.filter(c => c.sid === user.id);
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
   const leaderTasks = isLeader ? tasks.filter(t =>
@@ -782,16 +779,16 @@ function TeamCls({ cls, user, onOpenCl, isLeader, sectorPeers, tpls, sectors, on
           <div style={{marginTop:10,color:"var(--muted)",fontSize:14}}>Nenhum checklist neste filtro.</div>
         </div>
       ):(
-        <div style={{marginBottom:32,display:"flex",flexDirection:"column",gap:10}}>
+        <div className="cg" style={{display:"grid",gap:14,marginBottom:32}}>
           {list.map((cl)=>{
-            const p   = pct(cl.items);
-            const isOwner = isLeader && (cl.createdBySid === user.id || (!cl.createdBySid && cl.sid === user.id));
+            const p = pct(cl.items);
+            const canManage = isLeader;
             return(
-              <TeamClCard key={cl.id} cl={cl} p={p} isOwner={isOwner}
+              <TeamClCard key={cl.id} cl={cl} p={p} isOwner={canManage}
                 onOpen={()=>onOpenCl(cl)}
-                onEdit={isOwner&&onEditCl ? ()=>onOpenEditCl(cl) : null}
-                onDuplicate={isOwner&&onDuplicateCl ? ()=>onDuplicateCl(cl) : null}
-                onDelete={isOwner&&onDeleteCl ? ()=>onDeleteCl(cl) : null}/>
+                onEdit={canManage&&onEditCl ? ()=>onOpenEditCl(cl) : null}
+                onDuplicate={canManage&&onDuplicateCl ? ()=>onDuplicateCl(cl) : null}
+                onDelete={canManage&&onDeleteCl ? ()=>onDeleteCl(cl) : null}/>
             );
           })}
         </div>
@@ -1496,7 +1493,7 @@ export default function App() {
       onToggleTask={toggleTask}
       onAddCl={isLeader?(tid,sid,freq,days,dueTime)=>addCl(tid,sid,freq,days,dueTime,session.user.id):null}
       onEditCl={isLeader?editCl:null}
-      onDeleteCl={isLeader?(cl)=>{setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente.`})}:null}
+      onDeleteCl={isLeader?(cl)=>{if(window.confirm(`"${cl.name}" será deletado permanentemente. Confirma?`))delCl(cl.id);}:null}
       onDuplicateCl={isLeader?duplicateCl:null}
       onAddTask={(task)=>addTask({...task,createdBySid:session.user.id})}
       onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))delTask(id);}}

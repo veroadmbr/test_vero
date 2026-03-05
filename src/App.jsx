@@ -626,7 +626,7 @@ const NAV_TEAM_FULL=[
   {id:"alerts",    label:"Alertas",    icon:"notifications"},
 ];
 
-function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout }) {
+function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout }) {
   const myCls       = cls.filter(c => c.sid === user.id);
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
@@ -1548,7 +1548,7 @@ export default function App() {
     const mySector = isLeader ? session.user.sector : null;
     const sectorPeers = isLeader ? staff.filter(s=>s.sector===mySector&&s.status==="approved"&&!s.admin) : [];
     return <TeamView user={session.user} cls={cls} alerts={alerts} tasks={tasks}
-      sectors={sectors}
+      sectors={sectors} staff={staff}
       isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls}
       onToggle={toggleItem} onEv={setEv} onDelEv={delEv} onTogEv={togEv}
       onToggleTask={toggleTask}

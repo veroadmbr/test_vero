@@ -661,7 +661,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
           </div>
           <Hr/>
           <nav style={{padding:"8px 10px",flex:1}}>
-            {NAV_TEAM_FULL.filter(it=>it.id!=="tasks"||isLeader).map(it=><NI key={it.id} item={it}/>)}
+            {NAV_TEAM_FULL.map(it=><NI key={it.id} item={it}/>)}
           </nav>
           <Hr/>
           <div style={{padding:"12px 16px"}}>
@@ -695,7 +695,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
 
         {/* Mobile bottom nav */}
         <nav className="bn">
-          {NAV_TEAM_FULL.filter(it=>it.id!=="tasks"||isLeader).map(it=>(
+          {NAV_TEAM_FULL.map(it=>(
             <button key={it.id} onClick={()=>setPage(it.id)}
               style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"6px 10px",color:page===it.id?"var(--accent)":"var(--muted)",position:"relative",minWidth:48}}>
               <Icon n={it.icon} s={22} c={page===it.id?"var(--accent)":"var(--muted)"}/>

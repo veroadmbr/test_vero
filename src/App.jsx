@@ -1697,15 +1697,12 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
   const tasksPending = tasks.filter(t=>!t.done).length;
 
   const StatCard = ({icon, label, val, color, bg, onClick}) => (
-    <Card style={{padding:"18px 20px",cursor:onClick?"pointer":"default"}} onClick={onClick}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-        <div style={{width:36,height:36,borderRadius:"var(--rs)",background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <Icon n={icon} s={20} c={color}/>
-        </div>
-        {onClick&&<Icon n="arrow_forward_ios" s={13} c="var(--border2)"/>}
+    <Card style={{padding:"20px 16px",cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:10}} onClick={onClick}>
+      <div style={{width:40,height:40,borderRadius:"var(--rs)",background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <Icon n={icon} s={22} c={color}/>
       </div>
-      <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:32,color,lineHeight:1}}>{val}</div>
-      <div style={{fontSize:12,color:"var(--sub)",marginTop:6,fontWeight:500}}>{label}</div>
+      <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:34,color,lineHeight:1}}>{val}</div>
+      <div style={{fontSize:12,color:"var(--sub)",fontWeight:600,lineHeight:1.3}}>{label}</div>
     </Card>
   );
 
@@ -1729,23 +1726,11 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
         </div>
       )}
 
-      {/* Progresso Geral */}
-      <Card style={{padding:"18px 20px",marginBottom:16}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:7}}>
-            <Icon n="trending_up" s={20} c="var(--accent)"/>
-            <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15}}>Progresso Geral</span>
-          </div>
-          <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:32,color:"var(--accent)"}}>{ov}%</span>
-        </div>
-        <Bar v={ov} h={10}/>
-        <div style={{fontSize:12,color:"var(--sub)",marginTop:8}}>{all.filter(i=>i.done).length} de {all.length} itens concluídos</div>
-      </Card>
-
-      {/* Stat cards */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
-        <StatCard icon="pending_actions" label="Tarefas pendentes"    val={tasksPending} color="var(--warn)"   bg="var(--wbg)" onClick={()=>setPage("tasks")}/>
-        <StatCard icon="checklist"       label="Checklists pendentes" val={clsPending}   color="var(--blue)"   bg="var(--bbg)" onClick={()=>setPage("checklists")}/>
+      {/* 3 cards em linha */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:20}}>
+        <StatCard icon="trending_up"     label="Progresso Geral"      val={`${ov}%`}      color="var(--accent)" bg="var(--abg)"/>
+        <StatCard icon="pending_actions" label="Tarefas Pendentes"     val={tasksPending}  color="var(--warn)"   bg="var(--wbg)" onClick={()=>setPage("tasks")}/>
+        <StatCard icon="checklist"       label="Checklists Pendentes"  val={clsPending}    color="var(--blue)"   bg="var(--bbg)" onClick={()=>setPage("checklists")}/>
       </div>
 
       {/* Bottom grid */}

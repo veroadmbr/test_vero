@@ -2131,7 +2131,6 @@ function Tpls({tpls,onUse,onDel,onEdit,onDuplicate,onNew}){
 /* ═══ STAFF ═════════════════════════════════════════════════════════════════*/
 function Staff({ staff, cls, tasks, sectors, pending, onOpenPending, onEditMember, onDeleteMember, onOpenSectors }) {
   const ranked  = [...staff].filter(s=>s.status!=="pending").sort((a,b)=>b.score-a.score);
-  const MROLE   = { admin:"Admin", leader:"Líder", base:"Equipe Base", team:"Equipe" };
   const MCOLOR  = { admin:{c:"var(--accent)",bg:"var(--abg)"}, leader:{c:"var(--blue)",bg:"var(--bbg)"}, base:{c:"var(--sub)",bg:"var(--bg)"}, team:{c:"var(--sub)",bg:"var(--bg)"} };
   const safeMColor = (role) => MCOLOR[role] || MCOLOR["base"];
 
@@ -2190,7 +2189,6 @@ function Staff({ staff, cls, tasks, sectors, pending, onOpenPending, onEditMembe
         {ranked.map((s,i)=>{
           const mc   = cls.filter(c=>c.sid===s.id);
           const done = mc.filter(c=>c.st==="done").length;
-          const mr   = safeMColor(s.memberRole);
           const sec  = sectors.find(x=>x.id===s.sector);
           const pendingTasks = (tasks||[]).filter(t=>t.sid===s.id&&!t.done).length;
           return(

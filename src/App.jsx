@@ -72,10 +72,12 @@ const G = () => (
     .bn{display:none;}
     .mh{display:none;}
     @media(max-width:768px){
+      .app{flex-direction:column;}
+      .bdy{flex:1;}
       .sb{display:none;}
       .bn{display:flex;position:fixed;bottom:0;left:0;right:0;height:var(--bnh);background:var(--surface);border-top:1px solid var(--border);z-index:200;align-items:center;justify-content:space-around;}
-      .mh{display:flex;height:52px;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--surface);}
-      .ma{padding-bottom:calc(var(--bnh)+8px);}
+      .mh{display:flex;height:52px;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:150;}
+      .ma{padding-bottom:calc(var(--bnh)+8px);min-height:unset;}
       .pp{padding:16px 14px 8px!important;}
       .g4{grid-template-columns:repeat(2,1fr)!important;}
       .g2{grid-template-columns:1fr!important;}

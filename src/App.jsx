@@ -621,15 +621,16 @@ const NAV_TEAM_FULL=[
   {id:"alerts",    label:"Alertas",    icon:"notifications"},
 ];
 
-function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onLogout }) {
+function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout }) {
   const myCls       = cls.filter(c => c.sid === user.id);
-  const myTasks     = tasks.filter(t => t.sid === user.id);
+  const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const leaderTasks = isLeader ? tasks.filter(t => t.createdBySid === user.id) : [];
   const myAlerts = alerts.filter(a => a.sid === user.id);
   const unread   = myAlerts.filter(a=>!a.read).length;
   const [page,   setPage]   = useState("dashboard");
   const [openCl, setOpenCl] = useState(null);
   const [showTaskM, setShowTaskM] = useState(false);
+  const [showMyTaskM, setShowMyTaskM] = useState(false);
 
   const NI = ({item}) => {
     const active = page === item.id;
@@ -641,8 +642,8 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
         {item.id==="alerts"&&unread>0&&(
           <span style={{marginLeft:"auto",background:"var(--red)",color:"#fff",borderRadius:100,minWidth:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{unread}</span>
         )}
-        {item.id==="tasks"&&leaderTasks.filter(t=>!t.done).length>0&&(
-          <span style={{marginLeft:"auto",background:"var(--warn)",color:"#fff",borderRadius:100,minWidth:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{leaderTasks.filter(t=>!t.done).length}</span>
+        {item.id==="tasks"&&(isLeader?leaderTasks:myTasks).filter(t=>!t.done).length>0&&(
+          <span style={{marginLeft:"auto",background:"var(--warn)",color:"#fff",borderRadius:100,minWidth:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{(isLeader?leaderTasks:myTasks).filter(t=>!t.done).length}</span>
         )}
       </button>
     );
@@ -687,7 +688,8 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
         <div className="ma">
           {page==="dashboard"  && <TeamDash  user={user} cls={myCls} tasks={myTasks} onOpenCl={setOpenCl} setPage={setPage} onToggleTask={onToggleTask}/>}
           {page==="checklists" && <TeamCls   cls={myCls} tasks={myTasks} onOpenCl={setOpenCl} onToggleTask={onToggleTask} isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls} sectors={sectors} onAddCl={onAddCl} onAddTask={onAddTask}/>}
-          {page==="tasks"      && isLeader && <LeaderTasks tasks={leaderTasks} staff={sectorPeers} sectors={sectors} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowTaskM(true)}/>}
+          {page==="tasks"      && isLeader && <LeaderTasks tasks={leaderTasks} staff={sectorPeers} sectors={sectors} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowTaskM(true)} onDelTask={onDelTask}/>}
+          {page==="tasks"      && !isLeader && <MyTasks tasks={myTasks} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowMyTaskM(true)} onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))onDelTask&&onDelTask(id);}}/>}
           {page==="alerts"     && <TeamAlerts alerts={myAlerts}/>}
         </div>
 
@@ -714,7 +716,8 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
           onTogEv={id=>{ onTogEv(openCl.id,id); setOpenCl(p=>({...p,items:p.items.map(i=>i.id===id?{...i,eo:!i.eo}:i)})); }}
         />
       )}
-      {showTaskM && isLeader && <AddTaskModal staff={sectorPeers} onClose={()=>setShowTaskM(false)} onAdd={(task)=>{onAddTask({...task,createdBySid:user.id});setShowTaskM(false);}}/>}
+      {showTaskM && isLeader && <AddTaskModal staff={sectorPeers} onClose={()=>setShowTaskM(false)} onAdd={(task)=>{onAddTask({...task,createdBySid:user.id});setShowTaskM(false);}}/> }
+      {showMyTaskM && !isLeader && <AddTaskModal staff={[user]} onClose={()=>setShowMyTaskM(false)} onAdd={(task)=>{onAddTask&&onAddTask({...task,sid:user.id,createdBySid:user.id});setShowMyTaskM(false);}}/>}
     </>
   );
 }
@@ -1543,7 +1546,8 @@ export default function App() {
       onToggle={toggleItem} onEv={setEv} onDelEv={delEv} onTogEv={togEv}
       onToggleTask={toggleTask}
       onAddCl={isLeader?(tid,sid,freq,days,dueTime)=>addCl(tid,sid,freq,days,dueTime):null}
-      onAddTask={isLeader?(task)=>addTask({...task,createdBySid:session.user.id}):null}
+      onAddTask={(task)=>addTask({...task,createdBySid:session.user.id})}
+      onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))delTask(id);}}
       onLogout={()=>setSession(null)}/>;
   }
 
@@ -2410,8 +2414,164 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
   );
 }
 
+/* ═══ MY TASKS (equipe — não líderes) ══════════════════════════════════════ */
+function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
+  const [tab, setTab] = useState("assigned"); // "assigned" | "mine"
+  const [search, setSearch] = useState("");
+
+  const PRIO_MAP = {
+    high:   { c:"var(--red)",    bg:"var(--rbg)",  label:"Alta",   icon:"keyboard_double_arrow_up" },
+    medium: { c:"var(--warn)",   bg:"var(--wbg)",  label:"Média",  icon:"drag_handle" },
+    low:    { c:"var(--accent)", bg:"var(--abg)",  label:"Baixa",  icon:"keyboard_double_arrow_down" },
+  };
+
+  const assigned  = tasks.filter(t => t.sid === user.id && t.createdBySid !== user.id);
+  const selfMade  = tasks.filter(t => t.createdBySid === user.id && t.sid === user.id);
+  const current   = (tab === "assigned" ? assigned : selfMade).filter(t =>
+    !search.trim() || t.title.toLowerCase().includes(search.toLowerCase()) ||
+    (t.desc||"").toLowerCase().includes(search.toLowerCase())
+  );
+
+  const TabBtn = ({id, label, count}) => (
+    <button onClick={()=>setTab(id)} style={{
+      flex:1, padding:"9px 12px", border:"none", cursor:"pointer",
+      background: tab===id ? "var(--accent)" : "var(--surface)",
+      color: tab===id ? "#fff" : "var(--sub)",
+      borderRadius:"var(--rs)", fontWeight:600, fontSize:13,
+      display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+      transition:"all .15s",
+    }}>
+      {label}
+      <span style={{
+        background: tab===id ? "rgba(255,255,255,.25)" : "var(--border)",
+        color: tab===id ? "#fff" : "var(--sub)",
+        borderRadius:100, minWidth:18, height:18, fontSize:10, fontWeight:700,
+        display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px",
+      }}>{count}</span>
+    </button>
+  );
+
+  return (
+    <div className="pp fu">
+      {/* Header */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+        <div>
+          <h1 style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:22,display:"flex",alignItems:"center",gap:8}}>
+            <Icon n="task_alt" s={24} c="var(--accent)"/>Minhas Tarefas
+          </h1>
+          <p style={{fontSize:13,color:"var(--sub)",marginTop:3}}>
+            {assigned.filter(t=>!t.done).length} pendentes atribuídas · {selfMade.filter(t=>!t.done).length} pessoais pendentes
+          </p>
+        </div>
+        {tab==="mine" && (
+          <Btn onClick={onAddTask}><Icon n="add" s={18}/>Nova Tarefa</Btn>
+        )}
+      </div>
+
+      {/* Tab switcher */}
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        <TabBtn id="assigned" label="Atribuídas pelo líder" count={assigned.length}/>
+        <TabBtn id="mine"     label="Minhas tarefas"        count={selfMade.length}/>
+      </div>
+
+      {/* Search */}
+      <div style={{position:"relative",marginBottom:16}}>
+        <Icon n="search" s={16} c="var(--muted)" style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)","pointerEvents":"none"}}/>
+        <input value={search} onChange={e=>setSearch(e.target.value)}
+          placeholder="Buscar tarefas..."
+          style={{width:"100%",padding:"9px 12px 9px 34px",border:"1px solid var(--border2)",borderRadius:"var(--rs)",
+            fontSize:13,background:"var(--surface)",color:"var(--text)",boxSizing:"border-box",outline:"none"}}/>
+      </div>
+
+      {/* Task list */}
+      {current.length === 0 ? (
+        <div style={{textAlign:"center",padding:"48px 0",color:"var(--muted)"}}>
+          <Icon n={tab==="assigned"?"assignment_ind":"self_improvement"} s={40} c="var(--border2)"/>
+          <div style={{marginTop:12,fontSize:14,fontWeight:500}}>
+            {tab==="assigned" ? "Nenhuma tarefa atribuída" : "Nenhuma tarefa pessoal"}
+          </div>
+          {tab==="mine" && (
+            <Btn onClick={onAddTask} style={{marginTop:16}}><Icon n="add" s={18}/>Criar tarefa</Btn>
+          )}
+        </div>
+      ) : (
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {current.map((t,i) => {
+            const pr = PRIO_MAP[t.priority]||PRIO_MAP.medium;
+            const isOwn = t.createdBySid === user.id;
+            return (
+              <Card key={t.id} style={{
+                padding:"14px 16px", position:"relative",
+                animation:`fadeUp ${.08+i*.03}s ease`,
+                borderLeft:`3px solid ${t.done?"var(--accent)":pr.c}`,
+                opacity: t.done ? .75 : 1,
+              }}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                  {/* Checkbox */}
+                  <div onClick={()=>onToggleTask(t.id)} style={{
+                    width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",
+                    background:t.done?"var(--accent)":"var(--surface)",
+                    border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,
+                    transition:"all .15s",
+                  }}>
+                    {t.done&&<Icon n="check" s={14} c="#fff"/>}
+                  </div>
+                  {/* Content */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                      <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,
+                        textDecoration:t.done?"line-through":"none",
+                        color:t.done?"var(--muted)":"var(--text)"}}>{t.title}</span>
+                      <span style={{fontSize:11,fontWeight:600,color:pr.c,background:pr.bg,
+                        borderRadius:100,padding:"2px 8px",display:"flex",alignItems:"center",gap:3}}>
+                        <Icon n={pr.icon} s={11} c={pr.c}/>{pr.label}
+                      </span>
+                      {isOwn ? (
+                        <span style={{fontSize:11,fontWeight:600,color:"var(--accent)",background:"var(--abg)",
+                          borderRadius:100,padding:"2px 8px"}}>Pessoal</span>
+                      ) : (
+                        <span style={{fontSize:11,fontWeight:600,color:"var(--blue)",background:"var(--bbg)",
+                          borderRadius:100,padding:"2px 8px"}}>Atribuída</span>
+                      )}
+                    </div>
+                    {t.desc&&<div style={{fontSize:12,color:"var(--sub)",marginBottom:6,lineHeight:1.45}}>{t.desc}</div>}
+                    <div style={{display:"flex",alignItems:"center",gap:12,fontSize:11,color:"var(--muted)",flexWrap:"wrap"}}>
+                      {t.dueDate&&(
+                        <span style={{display:"flex",alignItems:"center",gap:3,color:!t.done?"var(--warn)":"var(--muted)"}}>
+                          <Icon n="event" s={13} c={!t.done?"var(--warn)":"var(--muted)"}/>Prazo: {t.dueDate}
+                        </span>
+                      )}
+                      <span style={{display:"flex",alignItems:"center",gap:3}}>
+                        <Icon n="add_circle_outline" s={12} c="var(--muted)"/>Criada em {t.createdAt}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {/* Delete — only for own tasks */}
+                {isOwn && onDelTask && (
+                  <button onClick={()=>onDelTask(t.id)}
+                    title="Deletar tarefa"
+                    style={{position:"absolute",top:10,right:10,background:"none",border:"none",cursor:"pointer",
+                      color:"var(--muted)",borderRadius:"var(--rs)",padding:4,display:"flex",alignItems:"center",
+                      transition:"all .15s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
+                    <Icon n="delete_outline" s={18}/>
+                  </button>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 /* ═══ LEADER TASKS ═════════════════════════════════════════════════════════ */
-function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask }) {
+function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onDelTask }) {
   const [filterStatus,   setFilterStatus]   = useState("all");
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
@@ -2597,6 +2757,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask }) {
                 animation:`fadeUp ${.08+i*.03}s ease`,
                 borderLeft:`3px solid ${t.done?"var(--accent)":pr.c}`,
                 opacity: t.done ? .75 : 1,
+                position:"relative",
               }}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                   {/* Checkbox — read-only visual, no toggle for leader */}
@@ -2668,6 +2829,18 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask }) {
                     </div>
                   </div>
                 </div>
+                {/* Delete button — only for creator */}
+                {onDelTask && t.creatorId===user.id && (
+                  <button onClick={()=>onDelTask(t.id)}
+                    title="Deletar tarefa"
+                    style={{position:"absolute",top:10,right:10,background:"none",border:"none",cursor:"pointer",
+                      color:"var(--muted)",borderRadius:"var(--rs)",padding:4,display:"flex",alignItems:"center",
+                      transition:"all .15s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
+                    <Icon n="delete_outline" s={18}/>
+                  </button>
+                )}
               </Card>
             );
           })}

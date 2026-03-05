@@ -2532,7 +2532,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
             <Icon n="task_alt" s={24} c="var(--accent)"/>Minhas Tarefas
           </h1>
           <p style={{fontSize:13,color:"var(--sub)",marginTop:3}}>
-            {assigned.filter(t=>!t.done).length} pendentes atribuídas · {selfMade.filter(t=>!t.done).length} pessoais pendentes
+            {assigned.filter(t=>!t.done).length} atribuídas a mim · {selfMade.filter(t=>!t.done).length} pessoais pendentes
           </p>
         </div>
         {tab==="mine" && (
@@ -2543,7 +2543,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
       {/* Tab switcher */}
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         <button onClick={()=>setTab("assigned")} style={{flex:1,padding:"9px 12px",border:"none",cursor:"pointer",background:tab==="assigned"?"var(--accent)":"var(--surface)",color:tab==="assigned"?"#fff":"var(--sub)",borderRadius:"var(--rs)",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}>
-          Atribuídas pelo líder
+          Atribuídas a mim
           <span style={{background:tab==="assigned"?"rgba(255,255,255,.25)":"var(--border)",color:tab==="assigned"?"#fff":"var(--sub)",borderRadius:100,minWidth:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{assigned.length}</span>
         </button>
         <button onClick={()=>setTab("mine")} style={{flex:1,padding:"9px 12px",border:"none",cursor:"pointer",background:tab==="mine"?"var(--accent)":"var(--surface)",color:tab==="mine"?"#fff":"var(--sub)",borderRadius:"var(--rs)",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}>
@@ -2566,7 +2566,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
         <div style={{textAlign:"center",padding:"48px 0",color:"var(--muted)"}}>
           <Icon n={tab==="assigned"?"assignment_ind":"self_improvement"} s={40} c="var(--border2)"/>
           <div style={{marginTop:12,fontSize:14,fontWeight:500}}>
-            {tab==="assigned" ? "Nenhuma tarefa atribuída" : "Nenhuma tarefa pessoal"}
+            {tab==="assigned" ? "Nenhuma tarefa atribuída a você" : "Nenhuma tarefa pessoal"}
           </div>
           {tab==="mine" && (
             <Btn onClick={onAddTask} style={{marginTop:16}}><Icon n="add" s={18}/>Criar tarefa</Btn>

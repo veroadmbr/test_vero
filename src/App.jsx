@@ -705,6 +705,11 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
               )}
             </button>
           ))}
+            <button onClick={onLogout}
+              style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"6px 10px",color:"var(--red)",position:"relative",minWidth:48}}>
+              <Icon n="logout" s={22} c="var(--red)"/>
+              <span style={{fontSize:10,fontWeight:400}}>Sair</span>
+            </button>
         </nav>
       </div>
 

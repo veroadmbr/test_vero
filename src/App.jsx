@@ -2131,8 +2131,6 @@ function Tpls({tpls,onUse,onDel,onEdit,onDuplicate,onNew}){
 /* ═══ STAFF ═════════════════════════════════════════════════════════════════*/
 function Staff({ staff, cls, tasks, sectors, pending, onOpenPending, onEditMember, onDeleteMember, onOpenSectors }) {
   const ranked  = [...staff].filter(s=>s.status!=="pending").sort((a,b)=>b.score-a.score);
-  const MCOLOR  = { admin:{c:"var(--accent)",bg:"var(--abg)"}, leader:{c:"var(--blue)",bg:"var(--bbg)"}, base:{c:"var(--sub)",bg:"var(--bg)"}, team:{c:"var(--sub)",bg:"var(--bg)"} };
-  const safeMColor = (role) => MCOLOR[role] || MCOLOR["base"];
 
   return (
     <div className="pp fu">

@@ -1422,8 +1422,8 @@ export default function App() {
     } : null;
     if (al) setAlerts(p => [al, ...p]);
     setScreen("login");
-    db.upsertStaff(user).catch(console.error);
-    if (al) db.upsertAlert(al).catch(console.error);
+    (async()=>{const r=await db.upsertStaff(user);if(r?.error)console.error(r.error)})();
+    if (al) (async()=>{const r=await db.upsertAlert(al);if(r?.error)console.error(r.error)})();
   };
 
   /* ── Approval / rejection ── */
@@ -1431,7 +1431,7 @@ export default function App() {
     let final;
     setStaff(p => p.map(s => s.id===updated.id ? (final={...s,...updated, password:s.password}) : s));
     setEditMemberM(null);
-    setTimeout(()=>{ if(final) db.upsertStaff(final).catch(console.error); }, 0);
+    setTimeout(()=>{ if(final) (async()=>{const r=await db.upsertStaff(final);if(r?.error)console.error(r.error)})(); }, 0);
   };
   const approveMember = (user) => {
     const upd={...user, status:"approved"};
@@ -1440,8 +1440,8 @@ export default function App() {
       body:`${user.name} foi aprovado e já pode fazer login.`,
       time:"agora", read:false, link:{ page:"staff" }};
     setAlerts(p => [al, ...p]);
-    db.upsertStaff(upd).catch(console.error);
-    db.upsertAlert(al).catch(console.error);
+    (async()=>{const r=await db.upsertStaff(upd);if(r?.error)console.error(r.error)})();
+    (async()=>{const r=await db.upsertAlert(al);if(r?.error)console.error(r.error)})();
   };
   const rejectMember = (user) => {
     setStaff(p => p.filter(s => s.id !== user.id));
@@ -1449,8 +1449,8 @@ export default function App() {
       body:`${user.name} foi reprovado e notificado por e-mail.`,
       time:"agora", read:false, link:{ page:"staff" }};
     setAlerts(p => [al, ...p]);
-    db.deleteStaff(user.id).catch(console.error);
-    db.upsertAlert(al).catch(console.error);
+    (async()=>{const r=await db.deleteStaff(user.id);if(r?.error)console.error(r.error)})();
+    (async()=>{const r=await db.upsertAlert(al);if(r?.error)console.error(r.error)})();
   };
 
   /* ── Checklist mutations ── */
@@ -1458,7 +1458,7 @@ export default function App() {
     let updated;
     setCls(p=>{const next=p.map(c=>c.id===id?(updated=fn(c)):c);return next;});
     setOpenCl(p=>p?.id===id?fn(p):p);
-    setTimeout(()=>{if(updated) db.upsertChecklist(updated).catch(console.error);},0);
+    setTimeout(()=>{if(updated) (async()=>{const r=await db.upsertChecklist(updated);if(r?.error)console.error(r.error)})();},0);
   };
   const toggleItem=(cid,iid)=>upd(cid,c=>{const items=c.items.map(i=>i.id===iid?{...i,done:!i.done}:i);return{...c,items,st:items.every(i=>i.done)?"done":items.some(i=>i.crit&&!i.done)?"alert":"in_progress"};});
   const editTxt  =(cid,iid,t)=>upd(cid,c=>({...c,items:c.items.map(i=>i.id===iid?{...i,t}:i)}));
@@ -1467,18 +1467,18 @@ export default function App() {
   const setEv    =(cid,iid,ev)=>upd(cid,c=>({...c,items:c.items.map(i=>i.id===iid?{...i,ev:"set",et:typeof ev==="object"?ev.text||"":ev,img:typeof ev==="object"?ev.img||null:null}:i)}));
   const delEv    =(cid,iid)  =>upd(cid,c=>({...c,items:c.items.map(i=>i.id===iid?{...i,ev:null,et:"",img:null,eo:false}:i)}));
   const togEv    =(cid,iid)  =>upd(cid,c=>({...c,items:c.items.map(i=>i.id===iid?{...i,eo:!i.eo}:i)}));
-  const delTpl   =(id)       =>{setTpls(p=>p.filter(t=>t.id!==id));setConfirm(null);db.deleteTemplate(id).catch(console.error);};
+  const delTpl   =(id)       =>{setTpls(p=>p.filter(t=>t.id!==id));setConfirm(null);(async()=>{const r=await db.deleteTemplate(id);if(r?.error)console.error(r.error)})();};
   const createTpl=(tpl)=>{
     const nt={...tpl,id:"tpl"+Date.now()};
     setTpls(p=>[...p,nt]);
     setNewTplM(false);
-    db.upsertTemplate(nt).catch(console.error);
+    (async()=>{const r=await db.upsertTemplate(nt);if(r?.error)console.error(r.error)})();
   };
   const delCl=(id)=>{
     setCls(p=>p.filter(c=>c.id!==id));
     if(openCl?.id===id) setOpenCl(null);
     setConfirm(null);
-    db.deleteChecklist(id).catch(console.error);
+    (async()=>{const r=await db.deleteChecklist(id);if(r?.error)console.error(r.error)})();
   };
     const addTask  =(task)=>{
     const nt={...task,id:"tk"+Date.now(),done:false,createdAt:new Date().toLocaleDateString("pt-BR"),createdBySid:task.createdBySid||null};
@@ -1487,15 +1487,20 @@ export default function App() {
     setTasks(p=>[nt,...p]);
     setAlerts(p=>[al,...p]);
     setAddTaskM(false);
-    db.upsertTask(nt).catch(console.error);
-    db.upsertAlert(al).catch(console.error);
+    (async()=>{const r=await db.upsertTask(nt);if(r?.error)console.error(r.error)})();
+    (async()=>{const r=await db.upsertAlert(al);if(r?.error)console.error(r.error)})();
   };
   const toggleTask=(id)=>{
-    setTasks(p=>{const next=p.map(t=>t.id===id?{...t,done:!t.done}:t);
-      const upd=next.find(t=>t.id===id);if(upd)db.upsertTask(upd).catch(console.error);
-      return next;});
+    try {
+      setTasks(p=>{
+        const next=p.map(t=>t.id===id?{...t,done:!t.done}:t);
+        const upd=next.find(t=>t.id===id);
+        if(upd){ console.log('toggleTask upd:', upd); (async()=>{const r=await db.upsertTask(upd);if(r?.error)console.error(r.error)})(); }
+        return next;
+      });
+    } catch(e){ console.error('toggleTask crash:',e); }
   };
-  const delTask   =(id)=>{ setTasks(p=>p.filter(t=>t.id!==id)); setConfirm(null); db.deleteTask(id).catch(console.error); };
+  const delTask   =(id)=>{ setTasks(p=>p.filter(t=>t.id!==id)); setConfirm(null); (async()=>{const r=await db.deleteTask(id);if(r?.error)console.error(r.error)})(); };
     const addCl=(tid,sid,freq="daily",days=[],dueTime="08:00")=>{
     const tpl=tpls.find(t=>t.id===tid);if(!tpl)return;
     const now=new Date();
@@ -1513,12 +1518,12 @@ export default function App() {
       time:"agora",read:false,link:{page:"checklists",cid:nc.id},sid:sid,forAdmins:true};
     setAlerts(p=>[al,...p]);
     setAddClM(null);setPage("checklists");
-    db.upsertChecklist(nc).catch(console.error);
-    db.upsertAlert(al).catch(console.error);
+    (async()=>{const r=await db.upsertChecklist(nc);if(r?.error)console.error(r.error)})();
+    (async()=>{const r=await db.upsertAlert(al);if(r?.error)console.error(r.error)})();
   };
   const onAlert=(al)=>{
     if(!al.link)return;
-    setAlerts(p=>p.map(a=>{ if(a.id!==al.id) return a; const u={...a,read:true}; db.upsertAlert(u).catch(console.error); return u; }));
+    setAlerts(p=>p.map(a=>{ if(a.id!==al.id) return a; const u={...a,read:true}; (async()=>{const r=await db.upsertAlert(u);if(r?.error)console.error(r.error)})(); return u; }));
     if(al.link.action==="pending"){setPendingModal(true);return;}
     if(al.link.cid){const t=cls.find(c=>c.id===al.link.cid);if(t){setOpenCl(t);setHlCl(al.link.cid);}}
     setPage(al.link.page||"dashboard");
@@ -1565,7 +1570,7 @@ export default function App() {
       onAddCl={isLeader?(tid,sid,freq,days,dueTime)=>addCl(tid,sid,freq,days,dueTime):null}
       onAddTask={(task)=>addTask({...task,createdBySid:session.user.id})}
       onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))delTask(id);}}
-      onMarkAlertRead={(id)=>{ setAlerts(p=>p.map(a=>{ if(a.id!==id) return a; const u={...a,read:true}; db.upsertAlert(u).catch(console.error); return u; })); }}
+      onMarkAlertRead={(id)=>{ setAlerts(p=>p.map(a=>{ if(a.id!==id) return a; const u={...a,read:true}; (async()=>{const r=await db.upsertAlert(u);if(r?.error)console.error(r.error)})(); return u; })); }}
       onLogout={()=>setSession(null)}/>;
   }
 
@@ -2868,7 +2873,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
               }}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                   {/* Checkbox — clickable for creator */}
-                  <div onClick={()=>onToggleTask&&onToggleTask(t.id)}
+                  <div onClick={()=>{ try{ onToggleTask&&onToggleTask(t.id); }catch(e){console.error("checkbox crash:",e);} }}
                     style={{width:22,height:22,borderRadius:6,flexShrink:0,background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,cursor:onToggleTask?"pointer":"default",transition:"all .15s"}}>
                     {t.done&&<Icon n="check" s={14} c="#fff"/>}
                   </div>

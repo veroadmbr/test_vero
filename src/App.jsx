@@ -69,10 +69,12 @@ const G = () => (
     .sb{width:var(--sw);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
     .ma{flex:1;overflow-y:auto;min-height:100dvh;}
     .bn{display:none;}
+    .mh{display:none;}
     @media(max-width:768px){
       .sb{display:none;}
       .bn{display:flex;position:fixed;bottom:0;left:0;right:0;height:var(--bnh);background:var(--surface);border-top:1px solid var(--border);z-index:200;align-items:center;justify-content:space-around;}
-      .ma{padding-bottom:calc(var(--bnh)+8px);}
+      .mh{display:flex;position:sticky;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);z-index:150;align-items:center;justify-content:space-between;padding:0 16px;}
+      .ma{padding-bottom:calc(var(--bnh)+8px);padding-top:0!important;}
       .pp{padding:16px 14px 8px!important;}
       .g4{grid-template-columns:repeat(2,1fr)!important;}
       .g2{grid-template-columns:1fr!important;}
@@ -631,6 +633,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
   const [openCl, setOpenCl] = useState(null);
   const [showTaskM, setShowTaskM] = useState(false);
   const [showMyTaskM, setShowMyTaskM] = useState(false);
+  const [userMenu,    setUserMenu]    = useState(false);
 
   const NI = ({item}) => {
     const active = page === item.id;
@@ -653,6 +656,34 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
     <>
       <G/>
       <div className="app">
+        {/* Mobile top header */}
+        <header className="mh">
+          <VeroLogo height={20}/>
+          <div style={{position:"relative"}}>
+            <button onClick={()=>setUserMenu(p=>!p)}
+              style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
+              <Av v={user.av} sz={28} bg={isLeader?"var(--bbg)":"var(--abg)"} co={isLeader?"var(--blue)":"var(--accent)"}/>
+              <span style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>{user.name.split(" ")[0]}</span>
+              <Icon n={userMenu?"expand_less":"expand_more"} s={16} c="var(--muted)"/>
+            </button>
+            {userMenu&&(
+              <>
+                <div onClick={()=>setUserMenu(false)} style={{position:"fixed",inset:0,zIndex:199}}/>
+                <div style={{position:"absolute",top:"calc(100% + 8px)",right:0,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:"var(--rs)",boxShadow:"var(--shm)",minWidth:180,zIndex:200}}>
+                  <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
+                    <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{user.name}</div>
+                    <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{user.email}</div>
+                    <div style={{fontSize:11,color:isLeader?"var(--blue)":"var(--accent)",fontWeight:500,marginTop:2}}>{isLeader?"Líder":"Equipe"}</div>
+                  </div>
+                  <button onClick={()=>{ setUserMenu(false); onLogout(); }}
+                    style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"11px 14px",background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:13,fontWeight:600,borderRadius:"0 0 var(--rs) var(--rs)"}}>
+                    <Icon n="logout" s={16} c="var(--red)"/>Sair da conta
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </header>
         {/* Sidebar */}
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
@@ -1244,6 +1275,7 @@ export default function App() {
   const [addTaskM,setAddTaskM]= useState(false);
   const [sectors, setSectors] = useState([]);
   const [editMemberM, setEditMemberM] = useState(null); // member object being edited
+  const [userMenu,    setUserMenu]    = useState(false);
   const [sectorsM,    setSectorsM]    = useState(false);
   const [loading,     setLoading]     = useState(true);
   const [dbError,     setDbError]     = useState(null);
@@ -1539,6 +1571,34 @@ export default function App() {
     <>
       <G/>
       <div className="app">
+        {/* Mobile top header — hidden on desktop via CSS */}
+        <header className="mh">
+          <VeroLogo height={20}/>
+          <div style={{position:"relative"}}>
+            <button onClick={()=>setUserMenu(p=>!p)}
+              style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
+              <Av v={session.user.av} sz={28} bg="var(--abg)" co="var(--accent)"/>
+              <span style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>{session.user.name.split(" ")[0]}</span>
+              <Icon n={userMenu?"expand_less":"expand_more"} s={16} c="var(--muted)"/>
+            </button>
+            {userMenu&&(
+              <>
+                <div onClick={()=>setUserMenu(false)} style={{position:"fixed",inset:0,zIndex:199}}/>
+                <div style={{position:"absolute",top:"calc(100% + 8px)",right:0,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:"var(--rs)",boxShadow:"var(--shm)",minWidth:180,zIndex:200}}>
+                  <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
+                    <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{session.user.name}</div>
+                    <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{session.user.email}</div>
+                    <div style={{fontSize:11,color:"var(--accent)",fontWeight:500,marginTop:2}}>Administrador</div>
+                  </div>
+                  <button onClick={()=>{ setUserMenu(false); setSession(null); try{sessionStorage.removeItem("vero_session");}catch{} }}
+                    style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"11px 14px",background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:13,fontWeight:600,borderRadius:"0 0 var(--rs) var(--rs)"}}>
+                    <Icon n="logout" s={16} c="var(--red)"/>Sair da conta
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </header>
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
             <VeroLogo height={22}/>

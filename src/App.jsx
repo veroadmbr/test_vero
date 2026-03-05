@@ -1261,7 +1261,16 @@ function PendingModal({ pending, onApprove, onReject, onClose }) {
 /* ═══ ROOT APP ═══════════════════════════════════════════════════════════════*/
 export default function App() {
   const [screen,  setScreen]  = useState("login"); // "login"|"register"
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("vero_session");
+      if (!saved) return null;
+      const { data, ts } = JSON.parse(saved);
+      if (Date.now() - ts < 10 * 60 * 1000) return data; // 10 min
+      sessionStorage.removeItem("vero_session");
+    } catch {}
+    return null;
+  });
   const [staff,   setStaff]   = useState([]);
   const [page,    setPage]    = useState("dashboard");
   const [tpls,    setTpls]    = useState([]);
@@ -1284,6 +1293,25 @@ export default function App() {
   const unread     = alerts.filter(a=>!a.read).length;
   const pending    = staff.filter(s=>s.status==="pending");
   const hasPending = pending.length > 0;
+
+  /* ── Refresh session timestamp on activity (keep alive up to 10 min) ── */
+  useEffect(() => {
+    if (!session) return;
+    const refresh = () => {
+      try {
+        const saved = sessionStorage.getItem("vero_session");
+        if (saved) {
+          sessionStorage.setItem("vero_session", JSON.stringify({data:session, ts:Date.now()}));
+        }
+      } catch {}
+    };
+    // Refresh on any click or keydown
+    window.addEventListener("click", refresh);
+    window.addEventListener("keydown", refresh);
+    // Also refresh every 2 min via interval
+    const iv = setInterval(refresh, 2 * 60 * 1000);
+    return () => { window.removeEventListener("click", refresh); window.removeEventListener("keydown", refresh); clearInterval(iv); };
+  }, [session]);
 
   /* ── Load all data from Supabase on mount ── */
   useEffect(() => {
@@ -1513,7 +1541,10 @@ export default function App() {
     </>
   );
   if (screen==="register") return <RegisterScreen onBack={()=>setScreen("login")} onRegistered={handleRegistered}/>;
-  if (!session) return <LoginScreen allStaff={staff} onLogin={s=>setSession(s)} onRegister={()=>setScreen("register")}/>;
+  if (!session) return <LoginScreen allStaff={staff} onLogin={s=>{
+    setSession(s);
+    try { sessionStorage.setItem("vero_session", JSON.stringify({data:s, ts:Date.now()})); } catch {}
+  }} onRegister={()=>setScreen("register")}/>;
   if (session.role==="team" || session.role==="leader") {
     const isLeader = session.role==="leader";
     const mySector = isLeader ? session.user.sector : null;
@@ -1565,7 +1596,7 @@ export default function App() {
                 <div style={{fontSize:11,color:"var(--muted)"}}>Administrador</div>
               </div>
             </div>
-            <button onClick={()=>setSession(null)} style={{width:"100%",background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"7px 12px",color:"var(--red)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5,fontSize:12,fontWeight:600,transition:"opacity .15s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".8"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+            <button onClick={()=>{ setSession(null); try{sessionStorage.removeItem("vero_session");}catch{} }} style={{width:"100%",background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"7px 12px",color:"var(--red)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5,fontSize:12,fontWeight:600,transition:"opacity .15s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".8"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               <Icon n="logout" s={16} c="var(--red)"/>Sair
             </button>
           </div>

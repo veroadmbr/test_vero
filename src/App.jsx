@@ -1121,6 +1121,7 @@ export default function App() {
   const [addClM,  setAddClM]  = useState(null);
   const [newTplM, setNewTplM] = useState(false);
   const [editTplM, setEditTplM] = useState(null);
+  const [editClM,  setEditClM]  = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [hlCl,    setHlCl]    = useState(null);
   const [pendingModal, setPendingModal] = useState(false);
@@ -1325,6 +1326,12 @@ export default function App() {
     setEditTplM(null);
     (async()=>{const r=await db.upsertTemplate(tpl);if(r?.error)console.error(r.error)})();
   };
+  const editCl=(updated)=>{
+    setCls(p=>p.map(c=>c.id===updated.id?updated:c));
+    if(openCl?.id===updated.id) setOpenCl(updated);
+    setEditClM(null);
+    (async()=>{const r=await db.upsertChecklist(updated);if(r?.error)console.error(r.error)})();
+  };
   const delCl=(id)=>{
     setCls(p=>p.filter(c=>c.id!==id));
     if(openCl?.id===id) setOpenCl(null);
@@ -1497,7 +1504,7 @@ export default function App() {
 
         <div className="ma">
           {page==="dashboard"  && <Dash  cls={cls} staff={staff} alerts={alerts} tasks={tasks} setPage={setPage} onOpenCl={setOpenCl} onAlert={onAlert} pending={pending} onOpenPending={()=>setPendingModal(true)}/>}
-          {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
+          {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onEdit={cl=>setEditClM(cl)} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
           {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} user={session.user} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
           {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
           {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)} onDeleteMember={m=>setDeleteMemberModal(m)}/>}
@@ -1521,6 +1528,7 @@ export default function App() {
       {addClM!==null && <AddCl staff={staff.filter(s=>!s.admin&&s.status==="approved")} tpls={tpls} pre={addClM?.tid} onClose={()=>setAddClM(null)} onAdd={addCl}/>}
       {newTplM       && <NewTpl onClose={()=>setNewTplM(false)} onCreate={createTpl}/>}
       {editTplM      && <NewTpl tpl={editTplM} onClose={()=>setEditTplM(null)} onCreate={editTpl}/>}
+        {editClM       && <EditClModal cl={editClM} staff={staff} onClose={()=>setEditClM(null)} onSave={editCl}/>}
       {confirm       && <Confirm msg={confirm.msg} onOk={()=>confirm.type==="tpl"?delTpl(confirm.id):confirm.type==="cl"?delCl(confirm.id):confirm.type==="task"?delTask(confirm.id):null} onCancel={()=>setConfirm(null)}/>}
       {pendingModal  && pending.length > 0 && <PendingModal pending={pending} onApprove={approveMember} onReject={rejectMember} onClose={()=>setPendingModal(false)}/>}
       {addTaskM && <AddTaskModal staff={staff.filter(s=>!s.admin&&s.status==="approved")} onClose={()=>setAddTaskM(false)} onAdd={addTask}/>}
@@ -1639,7 +1647,7 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
 }
 
 /* ═══ CHECKLISTS ════════════════════════════════════════════════════════════ */
-function Cls({cls,staff,onSel,onAdd,onDel,hlCl}){
+function Cls({cls,staff,onSel,onAdd,onEdit,onDel,hlCl}){
   const [filter,setFilter]=useState("all");
   const FILTERS=[{id:"all",l:"Todos"},{id:"alert",l:"Alertas"},{id:"in_progress",l:"Em andamento"},{id:"done",l:"Concluídos"},{id:"pending",l:"Pendentes"}];
   const list=filter==="all"?cls:cls.filter(c=>c.st===filter);
@@ -1694,6 +1702,12 @@ function Cls({cls,staff,onSel,onAdd,onDel,hlCl}){
               </div>
               <div style={{marginTop:8,fontSize:11,color:"var(--muted)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:3}}>
                 <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="check" s={13} c="var(--muted)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens</span>
+                                <button onClick={e=>{e.stopPropagation();onEdit(cl);}}
+                  style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",display:"flex",alignItems:"center",gap:3,fontSize:11,padding:"3px 6px",borderRadius:"var(--rs)",transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--abg)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
+                  <Icon n="edit" s={14}/>Editar
+                </button>
                 <button onClick={e=>{e.stopPropagation();onDel(cl);}}
                   style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",display:"flex",alignItems:"center",gap:3,fontSize:11,fontWeight:500,padding:"2px 6px",borderRadius:4,transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
@@ -2251,6 +2265,80 @@ function SectorsModal({ sectors, setSectors, onClose }) {
               )}
             </div>
           ))}
+        </div>
+      </Sheet>
+    </Ov>
+  );
+}
+
+/* ═══ EDIT CHECKLIST MODAL ══════════════════════════════════════════════════ */
+function EditClModal({ cl, staff, onClose, onSave }) {
+  const [name,    setName]    = useState(cl.name || "");
+  const [sid,     setSid]     = useState(cl.sid  || "");
+  const [dueTime, setDueTime] = useState(cl.dueTime || "08:00");
+  const [freq,    setFreq]    = useState(cl.freq || "daily");
+  const [days,    setDays]    = useState(cl.days || []);
+  const freqOpt   = FREQ_OPTS.find(f=>f.id===freq);
+  const needsDays = freqOpt?.hasDays;
+  const minDays   = freq==="twice_week"?2:freq==="three_week"?3:1;
+  const daysOk    = !needsDays || days.length>=minDays;
+  const toggleDay = d => setDays(p=>p.includes(d)?p.filter(x=>x!==d):[...p,d].sort());
+  const valid     = name.trim() && sid && daysOk;
+  const DAYS_PT   = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  const handleSave = () => {
+    if (!valid) return;
+    onSave({ ...cl, name: name.trim(), sid, dueTime, freq, days });
+  };
+
+  return (
+    <Ov onClick={onClose}>
+      <Sheet onClick={e=>e.stopPropagation()} style={{maxWidth:500}}>
+        <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:18,marginBottom:18,display:"flex",alignItems:"center",gap:8}}>
+          <Icon n="edit" s={22} c="var(--accent)"/>Editar Checklist
+        </div>
+
+        <Lbl>Nome</Lbl>
+        <Inp val={name} onChange={e=>setName(e.target.value)} ph="Nome do checklist"/>
+
+        <Lbl>Responsável</Lbl>
+        <Sel val={sid} onChange={e=>setSid(e.target.value)}>
+          {staff.filter(s=>!s.admin&&s.status==="approved").map(s=>(
+            <option key={s.id} value={s.id}>{s.name} — {s.role}</option>
+          ))}
+        </Sel>
+
+        <Lbl>Recorrência</Lbl>
+        <Sel val={freq} onChange={e=>{setFreq(e.target.value);setDays([]);}}>
+          {FREQ_OPTS.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}
+        </Sel>
+
+        {needsDays&&(
+          <div style={{marginTop:10,marginBottom:4}}>
+            <Lbl>Dias da semana (mínimo {minDays})</Lbl>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:6}}>
+              {DAYS_PT.map((d,i)=>(
+                <button key={i} onClick={()=>toggleDay(i)}
+                  style={{padding:"5px 10px",borderRadius:100,border:`1.5px solid ${days.includes(i)?"var(--accent)":"var(--border)"}`,
+                    background:days.includes(i)?"var(--abg)":"var(--surface)",
+                    color:days.includes(i)?"var(--accent)":"var(--sub)",
+                    fontSize:12,fontWeight:600,cursor:"pointer"}}>
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Lbl>Horário de prazo</Lbl>
+        <input type="time" value={dueTime} onChange={e=>setDueTime(e.target.value)}
+          style={{width:"100%",padding:"10px 12px",border:"1px solid var(--border2)",borderRadius:"var(--rs)",fontSize:14,background:"var(--bg)",color:"var(--text)",outline:"none",marginBottom:4}}/>
+
+        <div style={{display:"flex",gap:10,marginTop:6}}>
+          <Btn v="o" style={{flex:1}} onClick={onClose}>Cancelar</Btn>
+          <Btn style={{flex:1}} dis={!valid} onClick={handleSave}>
+            <Icon n="check" s={18}/>Salvar alterações
+          </Btn>
         </div>
       </Sheet>
     </Ov>

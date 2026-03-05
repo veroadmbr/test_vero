@@ -65,16 +65,17 @@ const G = () => (
     @keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .fu{animation:fadeUp .28s ease both;}
-    .app{display:flex;min-height:100dvh;}
-    .sb{width:var(--sw);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-    .ma{flex:1;overflow-y:auto;min-height:100dvh;}
+    .app{display:flex;flex-direction:column;min-height:100dvh;}
+    .sb{width:var(--sw);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:calc(100vh - 52px);overflow-y:auto;position:sticky;top:52px;}
+    .ma{flex:1;overflow-y:auto;min-height:calc(100dvh - 52px);}
+    .bdy{display:flex;flex:1;overflow:hidden;}
     .bn{display:none;}
-    .mh{display:none;}
+    .mh{display:flex;height:52px;background:var(--surface);border-bottom:1px solid var(--border);z-index:150;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;}
     @media(max-width:768px){
       .sb{display:none;}
       .bn{display:flex;position:fixed;bottom:0;left:0;right:0;height:var(--bnh);background:var(--surface);border-top:1px solid var(--border);z-index:200;align-items:center;justify-content:space-around;}
-      .mh{display:flex;position:sticky;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);z-index:150;align-items:center;justify-content:space-between;padding:0 16px;}
-      .ma{padding-bottom:calc(var(--bnh)+8px);padding-top:0!important;}
+      .sb{position:static;height:auto;top:0;}
+      .ma{padding-bottom:calc(var(--bnh)+8px);}
       .pp{padding:16px 14px 8px!important;}
       .g4{grid-template-columns:repeat(2,1fr)!important;}
       .g2{grid-template-columns:1fr!important;}
@@ -684,6 +685,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
             )}
           </div>
         </header>
+        <div className="bdy">
         {/* Sidebar */}
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
@@ -742,6 +744,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
               <span style={{fontSize:10,fontWeight:400}}>Sair</span>
             </button>
         </nav>
+        </div>
       </div>
 
       {openCl && (
@@ -1599,6 +1602,7 @@ export default function App() {
             )}
           </div>
         </header>
+        <div className="bdy">
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
             <VeroLogo height={22}/>
@@ -1640,6 +1644,7 @@ export default function App() {
             </button>
           ))}
         </nav>
+        </div>
       </div>
 
       {openCl   && <ClDetail cl={openCl} staff={staff} onClose={()=>{setOpenCl(null);setHlCl(null);}} onToggle={id=>toggleItem(openCl.id,id)} onEdit={(id,t)=>editTxt(openCl.id,id,t)} onAdd={t=>addItem(openCl.id,t)} onRem={id=>remItem(openCl.id,id)} onEv={(id,et)=>setEv(openCl.id,id,et)} onDelEv={id=>delEv(openCl.id,id)} onTogEv={id=>togEv(openCl.id,id)}/>}

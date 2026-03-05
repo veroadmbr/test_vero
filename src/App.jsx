@@ -89,6 +89,7 @@ const G = () => (
 
 /* ─── SEED DATA ──────────────────────────────────────────────────────────── */
 const mk=(id,t,done=false,ev=null,et="",crit=false)=>({id,t,done,ev,et,crit,eo:false});
+// eslint-disable-next-line no-unused-vars
 const S0=[
   {id:"s1",name:"Ana Lima",     firstName:"Ana",     lastName:"Lima",     email:"ana@vero.com",     phone:"(11)99100-0001",role:"Gerente",   av:"AL",score:94,admin:true, status:"approved",password:"admin123",memberRole:"admin",  sector:null},
   {id:"s2",name:"Carlos Mendes",firstName:"Carlos",  lastName:"Mendes",   email:"carlos@vero.com",  phone:"(11)99100-0002",role:"Cozinheiro",av:"CM",score:87,admin:false,status:"approved",password:"carlos123",memberRole:"leader", sector:"sec1"},
@@ -1643,7 +1644,7 @@ function Dash({cls,staff,alerts,setPage,onOpenCl,onAlert,pending,onOpenPending})
             </button>
           </div>
           {cls.slice(0,4).map((c,i)=>{
-            const p=pct(c.items);const m=S0.find(s=>s.id===c.sid);
+            const p=pct(c.items);const m=staff.find(s=>s.id===c.sid);
             return(
               <div key={c.id} onClick={()=>onOpenCl(c)} style={{padding:"12px 18px",borderBottom:i<3?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .12s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--bg)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>

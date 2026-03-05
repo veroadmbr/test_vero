@@ -1337,6 +1337,12 @@ export default function App() {
     setEditClM(null);
     (async()=>{const r=await db.upsertChecklist(updated);if(r?.error)console.error(r.error)})();
   };
+  const duplicateCl=(cl)=>{
+    const nc={...cl,id:"c"+Date.now(),name:cl.name+" (cópia)",st:"pending",
+      items:cl.items.map((it,i)=>({...it,id:"x"+Date.now()+"_"+i,done:false,ev:null,et:"",img:null,eo:false}))};
+    setCls(p=>[nc,...p]);
+    (async()=>{const r=await db.upsertChecklist(nc);if(r?.error)console.error(r.error)})();
+  };
   const delCl=(id)=>{
     setCls(p=>p.filter(c=>c.id!==id));
     if(openCl?.id===id) setOpenCl(null);
@@ -1509,7 +1515,7 @@ export default function App() {
 
         <div className="ma">
           {page==="dashboard"  && <Dash  cls={cls} staff={staff} alerts={alerts} tasks={tasks} setPage={setPage} onOpenCl={setOpenCl} onAlert={onAlert} pending={pending} onOpenPending={()=>setPendingModal(true)}/>}
-          {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onEdit={cl=>setEditClM(cl)} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
+          {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onEdit={cl=>setEditClM(cl)} onDuplicate={duplicateCl} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
           {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} user={session.user} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
           {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onEdit={t=>setEditTplM(t)} onDuplicate={duplicateTpl} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
           {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)} onDeleteMember={m=>setDeleteMemberModal(m)}/>}
@@ -1652,13 +1658,98 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
 }
 
 /* ═══ CHECKLISTS ════════════════════════════════════════════════════════════ */
-function Cls({cls,staff,onSel,onAdd,onEdit,onDel,hlCl}){
+function ClCard({cl, staff, onSel, onEdit, onDuplicate, onDel, hlCl}){
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(()=>{
+    if(!open) return;
+    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[open]);
+  const p   = pct(cl.items);
+  const m   = staff.find(s=>s.id===cl.sid);
+  const ev  = cl.items.filter(i=>i.ev).length;
+  const hl  = hlCl===cl.id;
+  const MENU = [
+    {icon:"edit",          label:"Editar",   action:()=>{onEdit(cl);   setOpen(false);}},
+    {icon:"content_copy",  label:"Duplicar", action:()=>{onDuplicate(cl); setOpen(false);}},
+    {icon:"delete_outline",label:"Deletar",  action:()=>{onDel(cl);   setOpen(false);}, red:true},
+  ];
+  return(
+    <div onClick={()=>onSel(cl)} style={{background:"var(--surface)",border:`1.5px solid ${hl?"var(--accent)":"var(--border)"}`,
+      borderRadius:"var(--r)",padding:"14px 16px",cursor:"pointer",
+      boxShadow:hl?"0 0 0 3px var(--abr)":"var(--sh)",transition:"box-shadow .15s,border-color .15s",position:"relative"}}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--shm)";e.currentTarget.style.borderColor="var(--accent)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow=hl?"0 0 0 3px var(--abr)":"var(--sh)";e.currentTarget.style.borderColor=hl?"var(--accent)":"var(--border)";}}>
+      {/* Header row */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+        <div style={{display:"flex",gap:10,alignItems:"center",flex:1,minWidth:0}}>
+          <Icon n="description" s={22} c="var(--accent)" style={{flexShrink:0}}/>
+          <div style={{minWidth:0}}>
+            <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{cl.name}</div>
+            <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
+              <Icon n="schedule" s={12} c="var(--muted)"/>{cl.due}
+            </div>
+            {cl.freq&&<div style={{fontSize:10,color:"var(--accent)",fontWeight:500,display:"flex",alignItems:"center",gap:3,marginTop:2}}>
+              <Icon n="autorenew" s={11} c="var(--accent)"/>{FREQ_LABEL(cl.freq,cl.days||[])}
+            </div>}
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+          <SPill s={cl.st}/>
+          {/* 3-dot menu */}
+          <div ref={ref} style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
+            <button onClick={()=>setOpen(o=>!o)}
+              style={{background:open?"var(--abg)":"none",border:"1px solid "+(open?"var(--accent)":"transparent"),
+                borderRadius:6,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",
+                cursor:"pointer",transition:"all .15s",color:open?"var(--accent)":"var(--muted)"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="var(--bg)";e.currentTarget.style.borderColor="var(--border2)"}}
+              onMouseLeave={e=>{if(!open){e.currentTarget.style.background="none";e.currentTarget.style.borderColor="transparent"}}}>
+              <Icon n="more_vert" s={18}/>
+            </button>
+            {open&&(
+              <div style={{position:"absolute",top:"calc(100% + 4px)",right:0,background:"var(--surface)",
+                border:"1px solid var(--border)",borderRadius:"var(--r)",boxShadow:"var(--shm)",
+                minWidth:160,zIndex:200,overflow:"hidden"}}>
+                {MENU.map((item,i)=>(
+                  <button key={i} onClick={item.action}
+                    style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 14px",
+                      background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:500,
+                      color:item.red?"var(--red)":"var(--text)",textAlign:"left",transition:"background .1s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background=item.red?"var(--rbg)":"var(--bg)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                    <Icon n={item.icon} s={16} c={item.red?"var(--red)":"var(--sub)"}/>{item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <Bar v={p} h={5}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <Av v={m?.av||"?"} sz={20} bg="var(--surface)" co="#4b5563"/>
+          <span style={{fontSize:11,color:"var(--sub)"}}>{m?.name}</span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          {ev>0&&<span style={{fontSize:11,color:"var(--accent)",fontWeight:500,display:"flex",alignItems:"center",gap:3}}>
+            <Icon n="attach_file" s={13} c="var(--accent)"/>{ev}
+          </span>}
+          <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:13,color:p===100?"var(--accent)":"var(--text)"}}>{p}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Cls({cls,staff,onSel,onAdd,onEdit,onDuplicate,onDel,hlCl}){
   const [filter,setFilter]=useState("all");
   const FILTERS=[{id:"all",l:"Todos"},{id:"alert",l:"Alertas"},{id:"in_progress",l:"Em andamento"},{id:"done",l:"Concluídos"},{id:"pending",l:"Pendentes"}];
   const list=filter==="all"?cls:cls.filter(c=>c.st===filter);
   return(
     <div className="pp fu">
-      {/* ── Checklists section ── */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:18}}>
         <div>
           <h1 style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:22}}>Checklists</h1>
@@ -1668,68 +1759,18 @@ function Cls({cls,staff,onSel,onAdd,onEdit,onDel,hlCl}){
       </div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:18}}>
         {FILTERS.map(f=>(
-          <button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:"5px 13px",borderRadius:100,border:filter===f.id?"1px solid var(--accent)":"1px solid var(--border2)",background:filter===f.id?"var(--abg)":"transparent",color:filter===f.id?"var(--accent)":"var(--sub)",fontSize:12,fontWeight:600,cursor:"pointer",transition:"all .15s"}}>{f.l}</button>
+          <button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:"5px 13px",borderRadius:100,border:`1.5px solid ${filter===f.id?"var(--accent)":"var(--border)"}`,background:filter===f.id?"var(--abg)":"var(--surface)",color:filter===f.id?"var(--accent)":"var(--sub)",fontSize:12,fontWeight:filter===f.id?600:400,cursor:"pointer"}}>{f.l}</button>
         ))}
       </div>
       <div className="cg" style={{display:"grid",gap:14,marginBottom:36}}>
-        {list.map((cl,i)=>{
-          const p=pct(cl.items);const m=staff.find(s=>s.id===cl.sid);
-          const ev=cl.items.filter(i=>i.ev).length;const hl=hlCl===cl.id;
-          return(
-            <div key={cl.id} onClick={()=>onSel(cl)} style={{background:"var(--surface)",border:`1.5px solid ${hl?"var(--accent)":cl.st==="alert"?"var(--rbr)":"var(--border)"}`,borderRadius:"var(--r)",boxShadow:hl?"0 0 0 3px var(--abr)":"var(--sh)",padding:"16px",cursor:"pointer",transition:"all .18s",animation:`fadeUp ${.15+i*.04}s ease`}}
-              onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--shm)";e.currentTarget.style.borderColor=hl?"var(--accent)":cl.st==="alert"?"var(--red)":"var(--border2)";}}
-              onMouseLeave={e=>{e.currentTarget.style.boxShadow=hl?"0 0 0 3px var(--abr)":"var(--sh)";e.currentTarget.style.borderColor=hl?"var(--accent)":cl.st==="alert"?"var(--rbr)":"var(--border)";}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                <div style={{display:"flex",gap:10,alignItems:"center",flex:1,minWidth:0}}>
-                  <Icon n="description" s={22} c="var(--accent)" style={{flexShrink:0}}/>
-                  <div style={{minWidth:0}}>
-                    <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{cl.name}</div>
-                    <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
-                      <Icon n="schedule" s={12} c="var(--muted)"/>{cl.due}
-                    </div>
-                    {cl.freq&&<div style={{fontSize:10,color:"var(--accent)",fontWeight:500,display:"flex",alignItems:"center",gap:2,marginTop:2}}>
-                      <Icon n="autorenew" s={11} c="var(--accent)"/>{FREQ_LABEL(cl.freq,cl.days||[])}
-                    </div>}
-                  </div>
-                </div>
-                <SPill s={cl.st}/>
-              </div>
-              <Bar v={p} h={5}/>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <Av v={m?.av||"?"} sz={20} bg="var(--surface)" co="#4b5563"/>
-                  <span style={{fontSize:11,color:"var(--sub)"}}>{m?.name}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  {ev>0&&<span style={{fontSize:11,color:"var(--accent)",fontWeight:500,display:"flex",alignItems:"center",gap:2}}><Icon n="attach_file" s={13} c="var(--accent)"/>{ev}</span>}
-                  <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:13,color:p===100?"var(--accent)":"var(--text)"}}>{p}%</span>
-                </div>
-              </div>
-              <div style={{marginTop:8,fontSize:11,color:"var(--muted)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:3}}>
-                <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="check" s={13} c="var(--muted)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens</span>
-                                <button onClick={e=>{e.stopPropagation();onEdit(cl);}}
-                  style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",display:"flex",alignItems:"center",gap:3,fontSize:11,padding:"3px 6px",borderRadius:"var(--rs)",transition:"all .15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--abg)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
-                  <Icon n="edit" s={14}/>Editar
-                </button>
-                <button onClick={e=>{e.stopPropagation();onDel(cl);}}
-                  style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",display:"flex",alignItems:"center",gap:3,fontSize:11,fontWeight:500,padding:"2px 6px",borderRadius:4,transition:"all .15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
-                  <Icon n="delete_outline" s={14}/>Deletar
-                </button>
-              </div>
-            </div>
-          );
-        })}
-        {list.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 20px",color:"var(--muted)"}}><Icon n="search_off" s={40} c="var(--border2)"/><div style={{marginTop:10,fontSize:14}}>Nenhum checklist neste filtro.</div></div>}
+        {list.map((cl)=>(
+          <ClCard key={cl.id} cl={cl} staff={staff} onSel={onSel} onEdit={onEdit} onDuplicate={onDuplicate} onDel={onDel} hlCl={hlCl}/>
+        ))}
+        {list.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 20px",color:"var(--muted)",fontSize:14}}>Nenhum checklist encontrado</div>}
       </div>
-
     </div>
   );
 }
-
 /* ═══ CHECKLIST DETAIL (ADMIN) ══════════════════════════════════════════════ */
 function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onTogEv}){
   const [eid,setEid]=useState(null);

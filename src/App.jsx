@@ -1683,6 +1683,15 @@ export default function App() {
       {addTaskM && <AddTaskModal staff={staff.filter(s=>!s.admin&&s.status==="approved")} onClose={()=>setAddTaskM(false)} onAdd={addTask}/>}
       {editMemberM && <EditMemberModal member={editMemberM} sectors={sectors} onClose={()=>setEditMemberM(null)} onSave={updateMember}/>}
       {sectorsM    && <SectorsModal sectors={sectors} setSectors={setSectors} onClose={()=>setSectorsM(false)}/>}
+      {deleteMemberModal && <DeleteMemberModal
+        member={deleteMemberModal}
+        onClose={()=>setDeleteMemberModal(null)}
+        onConfirm={member=>{
+          setStaff(p=>p.filter(s=>s.id!==member.id));
+          setDeleteMemberModal(null);
+          (async()=>{const r=await db.deleteStaff(member.id);if(r?.error)console.error(r.error)})();
+        }}
+      />}
     </>
   );
 }

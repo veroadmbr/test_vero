@@ -1410,6 +1410,7 @@ export default function App() {
   const [sectors, setSectors] = useState([]);
   const [editMemberM, setEditMemberM] = useState(null); // member object being edited
   const [userMenu,    setUserMenu]    = useState(false);
+  const [profileM,    setProfileM]    = useState(false);
   const [sectorsM,    setSectorsM]    = useState(false);
   const [deleteMemberModal, setDeleteMemberModal] = useState(null);
   const [loading,     setLoading]     = useState(true);

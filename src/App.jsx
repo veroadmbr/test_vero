@@ -1891,9 +1891,9 @@ function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onT
 
 /* ═══ TEMPLATES ═════════════════════════════════════════════════════════════ */
 function TplCard({tpl,onUse,onDel,onEdit,onDuplicate}){
-  const [open,setOpen]=React.useState(false);
-  const ref=React.useRef(null);
-  React.useEffect(()=>{
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{
     if(!open)return;
     const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
     document.addEventListener("mousedown",h);

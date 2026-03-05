@@ -773,7 +773,6 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
   const [showTaskM,  setShowTaskM]  = useState(false);
   const [showMyTaskM, setShowMyTaskM] = useState(false);
   const [userMenu,    setUserMenu]    = useState(false);
-  const [profileM,    setProfileM]    = useState(false);
 
   const NI = ({item}) => {
     const active = page === item.id;

@@ -687,7 +687,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tp
         {/* Main content */}
         <div className="ma">
           {page==="dashboard"  && <TeamDash  user={user} cls={myCls} tasks={myTasks} onOpenCl={setOpenCl} setPage={setPage} onToggleTask={onToggleTask}/>}
-          {page==="checklists" && <TeamCls   cls={myCls} tasks={myTasks} onOpenCl={setOpenCl} onToggleTask={onToggleTask} isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls} sectors={sectors} onAddCl={onAddCl} onAddTask={onAddTask}/>}
+          {page==="checklists" && <TeamCls   cls={myCls} onOpenCl={setOpenCl} isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls} sectors={sectors} onAddCl={onAddCl} onAddTask={onAddTask}/>}
           {page==="tasks"      && isLeader && <LeaderTasks tasks={leaderTasks} staff={sectorPeers} sectors={sectors} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowTaskM(true)} onDelTask={onDelTask}/>}
           {page==="tasks"      && !isLeader && <MyTasks tasks={myTasks} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowMyTaskM(true)} onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))onDelTask&&onDelTask(id);}}/>}
           {page==="alerts"     && <TeamAlerts alerts={myAlerts}/>}
@@ -856,7 +856,7 @@ function TeamDash({ user, cls, tasks, onOpenCl, setPage, onToggleTask }) {
 }
 
 /* ── Team Checklists page ───────────────────────────────────────────────── */
-function TeamCls({ cls, tasks, onOpenCl, onToggleTask, isLeader, sectorPeers, tpls, sectors, onAddCl, onAddTask }) {
+function TeamCls({ cls, onOpenCl, isLeader, sectorPeers, tpls, sectors, onAddCl, onAddTask }) {
   const [showAddCl,   setShowAddCl]  = useState(false);
   const [filter,setFilter] = useState("all");
   const FILTERS=[{id:"all",l:"Todos"},{id:"alert",l:"Alertas"},{id:"in_progress",l:"Em andamento"},{id:"done",l:"Concluídos"},{id:"pending",l:"Pendentes"}];
@@ -923,43 +923,6 @@ function TeamCls({ cls, tasks, onOpenCl, onToggleTask, isLeader, sectorPeers, tp
         </div>
       )}
 
-      {/* ── Tarefas Avulsas ── */}
-      <div style={{borderTop:"2px solid var(--border)",paddingTop:24}}>
-        <div style={{marginBottom:16}}>
-          <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:18,display:"flex",alignItems:"center",gap:8}}>
-            <Icon n="task_alt" s={20} c="var(--accent)"/>Minhas Tarefas
-          </div>
-          <div style={{fontSize:12,color:"var(--sub)",marginTop:3}}>{tasks.length} tarefas · {tasks.filter(t=>t.done).length} concluídas</div>
-        </div>
-
-        {tasks.length===0?(
-          <div style={{textAlign:"center",padding:"32px 20px",background:"var(--surface)",border:"1.5px dashed var(--border2)",borderRadius:"var(--r)"}}>
-            <Icon n="task_alt" s={40} c="var(--border2)"/>
-            <div style={{marginTop:10,fontSize:14,color:"var(--muted)"}}>Nenhuma tarefa avulsa atribuída.</div>
-          </div>
-        ):(
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {tasks.map((t,i)=>{
-              const pr=PRIO[t.priority]||PRIO.medium;
-              return(
-                <div key={t.id} style={{background:"var(--surface)",border:`1.5px solid ${t.done?"var(--abr)":"var(--border)"}`,borderRadius:"var(--rs)",padding:"13px 16px",display:"flex",alignItems:"flex-start",gap:12,transition:"all .18s",opacity:t.done?.7:1,animation:`fadeUp ${.1+i*.03}s ease`}}>
-                  <div onClick={()=>onToggleTask(t.id)} style={{width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s",marginTop:1}}>
-                    {t.done&&<Icon n="check" s={14} c="#fff"/>}
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap"}}>
-                      <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,textDecoration:t.done?"line-through":"none",color:t.done?"var(--muted)":"var(--text)"}}>{t.title}</span>
-                      <span style={{fontSize:11,fontWeight:600,color:pr.c,background:pr.bg,borderRadius:100,padding:"2px 8px"}}>{pr.label}</span>
-                    </div>
-                    {t.desc&&<div style={{fontSize:12,color:"var(--sub)",marginBottom:5,lineHeight:1.4}}>{t.desc}</div>}
-                    {t.dueDate&&<div style={{fontSize:11,color:"var(--muted)",display:"flex",alignItems:"center",gap:3}}><Icon n="event" s={13} c="var(--muted)"/>{t.dueDate}</div>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
     {/* Leader modals */}
     {showAddCl && isLeader && <AddCl staff={sectorPeers||[]} tpls={tpls||[]} onClose={()=>setShowAddCl(false)} onAdd={(tid,sid,freq,days,due)=>{if(onAddCl){onAddCl(tid,sid,freq,days,due);}setShowAddCl(false);}}/>}

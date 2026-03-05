@@ -768,129 +768,47 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
 
 /* ── Team Dashboard ─────────────────────────────────────────────────────── */
 function TeamDash({ user, cls, tasks, onOpenCl, setPage, onToggleTask }) {
-  const clsDone    = cls.filter(c=>c.st==="done");
-  const clsPending = cls.filter(c=>c.st!=="done");
-  const tasksDone    = tasks.filter(t=>t.done);
-  const tasksPending = tasks.filter(t=>!t.done);
+  const clsPending   = cls.filter(c=>c.st!=="done").length;
+  const clsDone      = cls.filter(c=>c.st==="done").length;
+  const tasksPending = tasks.filter(t=>!t.done).length;
+  const tasksDone    = tasks.filter(t=>t.done).length;
 
-  const SectionHeader = ({icon, label, count, color, onClick}) => (
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,marginTop:22}}>
-      <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15,display:"flex",alignItems:"center",gap:7}}>
-        <Icon n={icon} s={18} c={color}/>{label}
-        <span style={{fontSize:12,fontWeight:400,color:"var(--sub)",background:"var(--surface)",borderRadius:100,padding:"1px 8px"}}>{count}</span>
+  const StatCard = ({icon, label, val, color, bg, onClick}) => (
+    <Card style={{padding:"20px 16px",cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:10}} onClick={onClick}>
+      <div style={{width:40,height:40,borderRadius:"var(--rs)",background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <Icon n={icon} s={22} c={color}/>
       </div>
-      {onClick&&<button onClick={onClick} style={{background:"none",border:"none",color:"var(--accent)",cursor:"pointer",fontSize:12,fontWeight:600,display:"flex",alignItems:"center",gap:3}}>Ver todas<Icon n="arrow_forward_ios" s={12} c="var(--accent)"/></button>}
-    </div>
+      <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:34,color,lineHeight:1}}>{val}</div>
+      <div style={{fontSize:12,color:"var(--sub)",fontWeight:600,lineHeight:1.3}}>{label}</div>
+    </Card>
   );
-
-  const TaskRow = ({t}) => {
-    const PRIO={high:{c:"var(--red)",bg:"var(--rbg)",label:"Alta"},medium:{c:"var(--warn)",bg:"var(--wbg)",label:"Média"},low:{c:"var(--accent)",bg:"var(--abg)",label:"Baixa"}};
-    const pr=PRIO[t.priority]||PRIO.medium;
-    return(
-      <div style={{background:"var(--surface)",border:"1.5px solid var(--border)",borderRadius:"var(--rs)",padding:"12px 14px",display:"flex",alignItems:"center",gap:10,marginBottom:8,opacity:t.done?.7:1}}>
-        <div onClick={()=>onToggleTask(t.id)} style={{width:20,height:20,borderRadius:5,flexShrink:0,cursor:"pointer",background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
-          {t.done&&<Icon n="check" s={13} c="#fff"/>}
-        </div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontWeight:600,fontSize:13,marginBottom:2,textDecoration:t.done?"line-through":"none",color:t.done?"var(--muted)":"var(--text)"}}>{t.title}</div>
-          <div style={{display:"flex",alignItems:"center",gap:8,fontSize:11}}>
-            <span style={{color:pr.c,background:pr.bg,borderRadius:100,padding:"1px 7px",fontWeight:600}}>{pr.label}</span>
-            {t.dueDate&&<span style={{color:"var(--muted)",display:"flex",alignItems:"center",gap:3}}><Icon n="event" s={11} c="var(--muted)"/>{t.dueDate}</span>}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const ClRow = ({cl}) => {
-    const p=pct(cl.items);
-    return(
-      <div onClick={()=>onOpenCl(cl)} style={{background:"var(--surface)",border:`1.5px solid ${cl.st==="alert"?"var(--rbr)":cl.st==="done"?"var(--gbr)":"var(--border)"}`,borderRadius:"var(--rs)",padding:"12px 14px",marginBottom:8,cursor:"pointer",transition:"box-shadow .15s"}}
-        onMouseEnter={e=>e.currentTarget.style.boxShadow="var(--shm)"}
-        onMouseLeave={e=>e.currentTarget.style.boxShadow=""}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            <span style={{fontSize:20}}>{cl.icon}</span>
-            <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:13}}>{cl.name}</div>
-          </div>
-          <SPill s={cl.st}/>
-        </div>
-        <Bar v={p} h={5}/>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontSize:11,color:"var(--muted)"}}>
-          <span><Icon n="check_circle_outline" s={12} c="var(--muted)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens</span>
-          <span style={{fontFamily:"var(--fh)",fontWeight:700,color:p===100?"var(--accent)":"var(--text)"}}>{p}%</span>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="pp fu">
-      {/* Header */}
       <div style={{marginBottom:22}}>
         <h1 style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:24}}>
           Olá, {user.firstName||user.name.split(" ")[0]}! 👋
         </h1>
         <p style={{fontSize:13,color:"var(--sub)",marginTop:3}}>
-          {tasksPending.length===0&&clsPending.length===0 ? "Tudo em dia! ✅" : `${tasksPending.length} tarefa${tasksPending.length!==1?"s":""} e ${clsPending.length} checklist${clsPending.length!==1?"s":""} pendente${clsPending.length!==1?"s":""}`}
+          {tasksPending===0&&clsPending===0 ? "Tudo em dia! ✅" : `${tasksPending} tarefa${tasksPending!==1?"s":""} e ${clsPending} checklist${clsPending!==1?"s":""} pendente${clsPending!==1?"s":""}`}
         </p>
       </div>
 
-      {/* Summary cards */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:4}}>
-        {[
-          {label:"Tarefas pendentes",  val:tasksPending.length,  icon:"pending_actions", c:"var(--warn)",  bg:"var(--wbg)"},
-          {label:"Tarefas concluídas",  val:tasksDone.length,    icon:"task_alt",        c:"var(--accent)",bg:"var(--abg)"},
-          {label:"Checklists pendentes",val:clsPending.length,   icon:"checklist",       c:"var(--blue)",  bg:"var(--bbg)"},
-          {label:"Checklists concluídos",val:clsDone.length,     icon:"check_circle",    c:"var(--accent)",bg:"var(--abg)"},
-        ].map(({label,val,icon,c,bg})=>(
-          <Card key={label} style={{padding:"14px 16px"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-              <div style={{fontSize:11,color:"var(--sub)",fontWeight:500,lineHeight:1.3}}>{label}</div>
-              <div style={{width:28,height:28,borderRadius:"var(--rs)",background:bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <Icon n={icon} s={16} c={c}/>
-              </div>
-            </div>
-            <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:24,color:"var(--text)"}}>{val}</div>
-          </Card>
-        ))}
+      {/* 2 cards: tarefas */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+        <StatCard icon="pending_actions" label="Tarefas Pendentes"  val={tasksPending} color="var(--warn)"   bg="var(--wbg)" onClick={()=>setPage("tasks")}/>
+        <StatCard icon="task_alt"        label="Tarefas Concluídas" val={tasksDone}    color="var(--accent)" bg="var(--abg)" onClick={()=>setPage("tasks")}/>
       </div>
 
-      {/* Tarefas Pendentes */}
-      {tasksPending.length>0&&(
-        <div>
-          <SectionHeader icon="pending_actions" label="Tarefas Pendentes" count={tasksPending.length} color="var(--warn)" onClick={()=>setPage("tasks")}/>
-          {tasksPending.map(t=><TaskRow key={t.id} t={t}/>)}
-        </div>
-      )}
-
-      {/* Tarefas Concluídas */}
-      {tasksDone.length>0&&(
-        <div>
-          <SectionHeader icon="task_alt" label="Tarefas Concluídas" count={tasksDone.length} color="var(--accent)" onClick={()=>setPage("tasks")}/>
-          {tasksDone.map(t=><TaskRow key={t.id} t={t}/>)}
-        </div>
-      )}
-
-      {/* Checklists Pendentes */}
-      {clsPending.length>0&&(
-        <div>
-          <SectionHeader icon="checklist" label="Checklists Pendentes" count={clsPending.length} color="var(--blue)" onClick={()=>setPage("checklists")}/>
-          {clsPending.map(cl=><ClRow key={cl.id} cl={cl}/>)}
-        </div>
-      )}
-
-      {/* Checklists Concluídos */}
-      {clsDone.length>0&&(
-        <div>
-          <SectionHeader icon="check_circle" label="Checklists Concluídos" count={clsDone.length} color="var(--accent)" onClick={()=>setPage("checklists")}/>
-          {clsDone.map(cl=><ClRow key={cl.id} cl={cl}/>)}
-        </div>
-      )}
+      {/* 2 cards: checklists */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:4}}>
+        <StatCard icon="checklist"    label="Checklists Pendentes"  val={clsPending} color="var(--blue)"   bg="var(--bbg)" onClick={()=>setPage("checklists")}/>
+        <StatCard icon="check_circle" label="Checklists Concluídos" val={clsDone}    color="var(--accent)" bg="var(--abg)" onClick={()=>setPage("checklists")}/>
+      </div>
 
       {/* Empty */}
       {cls.length===0&&tasks.length===0&&(
-        <div style={{textAlign:"center",padding:"40px 20px"}}>
+        <div style={{textAlign:"center",padding:"40px 20px",marginTop:16}}>
           <Icon n="inbox" s={52} c="var(--border2)"/>
           <div style={{marginTop:16,fontSize:15,fontWeight:500,color:"var(--sub)"}}>Nenhuma tarefa atribuída ainda.</div>
           <div style={{fontSize:13,marginTop:6,color:"var(--muted)"}}>Fale com o administrador.</div>

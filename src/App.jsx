@@ -664,7 +664,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
               <div>
                 <div style={{fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:5}}>
                   {user.name}
-                  {isLeader&&<span style={{fontSize:10,fontWeight:700,color:"var(--blue)",background:"var(--bbg)",borderRadius:100,padding:"1px 6px"}}>LÍDER</span>}
+                  {isLeader&&<span style={{fontSize:10,fontWeight:700,color:"#fff",background:"#3b82f6",borderRadius:100,padding:"2px 8px"}}>LÍDER</span>}
                 </div>
                 <div style={{fontSize:11,color:"var(--muted)"}}>{user.role}</div>
               </div>
@@ -2170,27 +2170,6 @@ function Staff({ staff, cls, tasks, sectors, pending, onOpenPending, onEditMembe
         </div>
       )}
 
-      {/* Podium */}
-      {ranked.length>=2&&(
-        <Card style={{marginBottom:20,display:"flex",justifyContent:"center",alignItems:"flex-end",gap:20,padding:"24px",overflow:"hidden",position:"relative"}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,var(--abg),#fff)",pointerEvents:"none"}}/>
-          {[ranked[1],ranked[0],ranked[2]].map((s,i)=>{
-            if(!s)return null;
-            const pos=i===0?2:i===1?1:3;
-            const hs=[90,118,70];
-            const colors=["#94a3b8","#f59e0b","#cd7c2f"];
-            return(
-              <div key={s.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",zIndex:1}}>
-                <Av v={s.av} sz={38} bg={i===1?"#fefce8":"var(--surface)"} co={colors[i]}/>
-                <div style={{fontSize:12,fontWeight:600,textAlign:"center"}}>{s.name.split(" ")[0]}</div>
-                <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:18,color:colors[i]}}>{s.score}</div>
-                <div style={{width:62,height:hs[i],background:`${colors[i]}18`,border:`1px solid ${colors[i]}44`,borderRadius:"6px 6px 0 0",display:"flex",alignItems:"flex-start",justifyContent:"center",paddingTop:8,fontFamily:"var(--fh)",fontWeight:600,fontSize:20,color:colors[i]}}>#{pos}</div>
-              </div>
-            );
-          })}
-        </Card>
-      )}
-
       {/* Sectors summary strip */}
       {sectors.length>0&&(
         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:18}}>
@@ -2221,8 +2200,7 @@ function Staff({ staff, cls, tasks, sectors, pending, onOpenPending, onEditMembe
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,flexWrap:"wrap"}}>
                   <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14}}>{s.name}</span>
-                  <Pill ch={s.role||"—"} c="var(--sub)" b="var(--surface)" br="var(--border)"/>
-                  <span style={{fontSize:11,fontWeight:600,color:mr.c,background:mr.bg,borderRadius:100,padding:"2px 8px"}}>{MROLE[s.memberRole||"base"]}</span>
+                  <Pill ch={s.role||"—"} c="#3b82f6" b="#eff6ff" br="#bfdbfe"/>
                   {sec&&<span style={{fontSize:11,color:"var(--blue)",background:"var(--bbg)",borderRadius:100,padding:"2px 8px",fontWeight:500,display:"flex",alignItems:"center",gap:3}}><Icon n="corporate_fare" s={11} c="var(--blue)"/>{sec.name}</span>}
                 </div>
                 <div style={{fontSize:11,color:"var(--muted)",marginBottom:6,display:"flex",alignItems:"center",gap:12}}>

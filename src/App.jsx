@@ -2204,11 +2204,8 @@ function Alts({alerts,onMarkAll,onAlert}){
               <Icon n={TI[al.type]} s={20} c={TC[al.type]}/>
             </div>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
-                <div style={{fontWeight:600,fontSize:14,lineHeight:1.3}}>{al.title}</div>
-                {!al.read&&<div style={{width:8,height:8,borderRadius:"50%",background:TC[al.type],flexShrink:0,marginTop:4}}/>}
-              </div>
-              <div style={{color:"var(--sub)",fontSize:13,marginTop:4,lineHeight:1.5}}>{al.body}</div>
+              <div style={{fontWeight:600,fontSize:14,lineHeight:1.3,marginBottom:4}}>{al.title}</div>
+              <div style={{color:"var(--sub)",fontSize:13,lineHeight:1.5}}>{al.body}</div>
               <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
                 <span style={{fontSize:11,color:"var(--muted)",display:"flex",alignItems:"center",gap:3}}>
                   <Icon n="schedule" s={13} c="var(--muted)"/>{al.time}
@@ -2218,6 +2215,15 @@ function Alts({alerts,onMarkAll,onAlert}){
                 </span>}
               </div>
             </div>
+            {!al.read&&(
+              <button onClick={e=>{e.stopPropagation();onAlert({...al,read:true});}}
+                style={{flexShrink:0,background:"rgba(255,255,255,.45)",border:"1px solid rgba(255,255,255,.7)",borderRadius:"var(--rs)",padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)",display:"flex",alignItems:"center",gap:4,transition:"all .15s",alignSelf:"flex-start"}}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.8)"}
+                onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,.45)"}>
+                <Icon n="check" s={14}/>OK
+              </button>
+            )}
+            {al.read&&<div style={{flexShrink:0,fontSize:11,color:"var(--muted)",display:"flex",alignItems:"center",gap:3,alignSelf:"flex-start"}}><Icon n="check_circle" s={14} c="var(--accent)"/>Lido</div>}
           </div>
         ))}
       </div>

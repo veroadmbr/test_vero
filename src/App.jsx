@@ -1491,14 +1491,12 @@ export default function App() {
     (async()=>{const r=await db.upsertAlert(al);if(r?.error)console.error(r.error)})();
   };
   const toggleTask=(id)=>{
-    try {
-      setTasks(p=>{
-        const next=p.map(t=>t.id===id?{...t,done:!t.done}:t);
-        const upd=next.find(t=>t.id===id);
-        if(upd){ console.log('toggleTask upd:', upd); (async()=>{const r=await db.upsertTask(upd);if(r?.error)console.error(r.error)})(); }
-        return next;
-      });
-    } catch(e){ console.error('toggleTask crash:',e); }
+    setTasks(p=>{
+      const next=p.map(t=>t.id===id?{...t,done:!t.done}:t);
+      const upd=next.find(t=>t.id===id);
+      if(upd)(async()=>{const r=await db.upsertTask(upd);if(r?.error)console.error(r.error)})();
+      return next;
+    });
   };
   const delTask   =(id)=>{ setTasks(p=>p.filter(t=>t.id!==id)); setConfirm(null); (async()=>{const r=await db.deleteTask(id);if(r?.error)console.error(r.error)})(); };
     const addCl=(tid,sid,freq="daily",days=[],dueTime="08:00")=>{
@@ -2586,13 +2584,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
               }}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                   {/* Checkbox */}
-                  <div onClick={()=>onToggleTask(t.id)} style={{
-                    width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",
-                    background:t.done?"var(--accent)":"var(--surface)",
-                    border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,
-                    display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,
-                    transition:"all .15s",
-                  }}>
+                  <div onClick={()=>onToggleTask(t.id)} style={{width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,transition:"all .15s"}}>
                     {t.done&&<Icon n="check" s={14} c="#fff"/>}
                   </div>
                   {/* Content */}
@@ -2873,8 +2865,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
               }}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                   {/* Checkbox — clickable for creator */}
-                  <div onClick={()=>{ try{ onToggleTask&&onToggleTask(t.id); }catch(e){console.error("checkbox crash:",e);} }}
-                    style={{width:22,height:22,borderRadius:6,flexShrink:0,background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,cursor:onToggleTask?"pointer":"default",transition:"all .15s"}}>
+                  <div onClick={()=>onToggleTask(t.id)} style={{width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2,transition:"all .15s"}}>
                     {t.done&&<Icon n="check" s={14} c="#fff"/>}
                   </div>
 
@@ -3192,12 +3183,7 @@ function AdminTasks({ tasks, staff, sectors, user, onToggleTask, onDelTask, onAd
               }}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
                   {/* Checkbox */}
-                  <div onClick={()=>onToggleTask(t.id)}
-                    style={{width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",
-                      background:t.done?"var(--accent)":"var(--surface)",
-                      border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      transition:"all .15s",marginTop:2}}>
+                  <div onClick={()=>onToggleTask(t.id)} style={{width:22,height:22,borderRadius:6,flexShrink:0,cursor:"pointer",background:t.done?"var(--accent)":"var(--surface)",border:`2px solid ${t.done?"var(--accent)":"var(--border2)"}`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s",marginTop:2}}>
                     {t.done&&<Icon n="check" s={14} c="#fff"/>}
                   </div>
 

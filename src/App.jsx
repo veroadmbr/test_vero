@@ -2514,7 +2514,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
           </p>
         </div>
         {tab==="mine" && (
-          {taskTab==="mine"&&<Btn onClick={onAddTask}><Icon n="add" s={18}/>Nova Tarefa</Btn>}
+          <Btn onClick={onAddTask}><Icon n="add" s={18}/>Nova Tarefa</Btn>
         )}
       </div>
 

@@ -10,7 +10,7 @@ const Icon = ({ n, s = 20, c = "currentColor", style: sx }) => (
 );
 
 /* ═══ VERO LOGO ════════════════════════════════════════════════════════════ */
-const VeroLogo = ({ height = 32 }) => {
+const VeroLogo = ({ height = 42 }) => {
   const w = Math.round(height * 5022 / 1252);
   return (
     <svg width={w} height={height} viewBox="0 0 5022 1252" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -691,7 +691,7 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 
         <div style={{ textAlign:"center", marginBottom:36 }}>
           <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>
-            <VeroLogo height={48}/>
+            <VeroLogo height={62}/>
           </div>
           <div style={{ fontSize:14, color:"var(--sub)" }}>Powered by Vero</div>
         </div>
@@ -797,7 +797,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
       <div className="app">
         {/* Mobile top header */}
         <header className="mh">
-          <VeroLogo height={20}/>
+          <VeroLogo height={26}/>
           <div style={{position:"relative"}}>
             <button onClick={()=>setUserMenu(p=>!p)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
@@ -829,7 +829,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
         {/* Sidebar */}
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
-            <VeroLogo height={22}/>
+            <VeroLogo height={29}/>
             <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Área da Equipe</div>
           </div>
           <Hr/>
@@ -1682,7 +1682,7 @@ export default function App() {
     <>
       <G/>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#f0eaff 0%,#f5f6f8 60%)"}}>
-        <VeroLogo height={44}/>
+        <VeroLogo height={57}/>
         <div style={{marginTop:24,fontSize:14,color:"var(--sub)",display:"flex",alignItems:"center",gap:8}}>
           <span style={{width:18,height:18,border:"2px solid var(--accent)",borderTopColor:"transparent",borderRadius:"50%",display:"inline-block",animation:"spin 0.8s linear infinite"}}/>
           Carregando dados...
@@ -1760,7 +1760,7 @@ export default function App() {
       <div className="app">
         {/* Mobile top header — hidden on desktop via CSS */}
         <header className="mh">
-          <VeroLogo height={20}/>
+          <VeroLogo height={26}/>
           <div style={{position:"relative"}}>
             <button onClick={()=>setUserMenu(p=>!p)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
@@ -1791,7 +1791,7 @@ export default function App() {
         <div className="bdy">
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
-            <VeroLogo height={22}/>
+            <VeroLogo height={29}/>
             <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Gestão Operacional</div>
           </div>
           <Hr/>

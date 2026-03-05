@@ -1326,6 +1326,11 @@ export default function App() {
     setEditTplM(null);
     (async()=>{const r=await db.upsertTemplate(tpl);if(r?.error)console.error(r.error)})();
   };
+  const duplicateTpl=(tpl)=>{
+    const nt={...tpl,id:"tpl"+Date.now(),name:tpl.name+" (cópia)"};
+    setTpls(p=>[...p,nt]);
+    (async()=>{const r=await db.upsertTemplate(nt);if(r?.error)console.error(r.error)})();
+  };
   const editCl=(updated)=>{
     setCls(p=>p.map(c=>c.id===updated.id?updated:c));
     if(openCl?.id===updated.id) setOpenCl(updated);
@@ -1506,7 +1511,7 @@ export default function App() {
           {page==="dashboard"  && <Dash  cls={cls} staff={staff} alerts={alerts} tasks={tasks} setPage={setPage} onOpenCl={setOpenCl} onAlert={onAlert} pending={pending} onOpenPending={()=>setPendingModal(true)}/>}
           {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onEdit={cl=>setEditClM(cl)} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
           {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} user={session.user} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
-          {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
+          {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onEdit={t=>setEditTplM(t)} onDuplicate={duplicateTpl} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
           {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)} onDeleteMember={m=>setDeleteMemberModal(m)}/>}
           {page==="alerts"     && <Alts  alerts={alerts} onMarkAll={()=>setAlerts(p=>p.map(a=>({...a,read:true})))} onAlert={onAlert}/>}
         </div>

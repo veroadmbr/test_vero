@@ -451,20 +451,16 @@ function RegisterScreen({ onBack, onRegistered }) {
    No PIN numpad — clean form-based approach.
 ══════════════════════════════════════════════════════════════════════════════*/
 function LoginScreen({ allStaff, onLogin, onRegister }) {
-  const [mode,     setMode]    = useState(null); // null|"admin"|"team"
   const [email,    setEmail]   = useState("");
   const [password, setPass]    = useState("");
   const [showPass, setShowP]   = useState(false);
   const [err,      setErr]     = useState("");
   const [loading,  setLoading] = useState(false);
 
-  const reset = (m) => { setMode(m); setEmail(""); setPass(""); setErr(""); setShowP(false); };
-
   const submit = async () => {
     if (!email || !password) { setErr("Preencha e-mail e senha."); return; }
     setLoading(true);
     try {
-      // Query DB directly to always get fresh password (bypasses stale allStaff state)
       const { data, error } = await import("./supabase").then(m =>
         m.supabase.from("staff").select("*")
           .eq("email", email.trim().toLowerCase())
@@ -473,104 +469,41 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
       );
       if (error || !data) { setErr("E-mail ou senha incorretos."); setLoading(false); return; }
       if (data.password !== password) { setErr("E-mail ou senha incorretos."); setLoading(false); return; }
-      // Check mode matches
-      if (mode === "admin" && !data.admin) { setErr("Esta conta não tem acesso de administrador."); setLoading(false); return; }
-      if (mode === "team"  &&  data.admin) { setErr("Use o acesso de Administrador para esta conta."); setLoading(false); return; }
-      // Build user object from DB row
       const user = {
         id: data.id, name: data.name, firstName: data.first_name, lastName: data.last_name,
         email: data.email, phone: data.phone, role: data.role, av: data.av,
         score: data.score, admin: data.admin, status: data.status, password: data.password,
         memberRole: data.member_role, sector: data.sector,
       };
-      onLogin({ role: mode === "admin" ? "admin" : (user.memberRole==="leader" ? "leader" : "team"), user });
+      onLogin({ role: data.admin ? "admin" : (user.memberRole === "leader" ? "leader" : "team"), user });
     } catch(e) {
       setErr("Erro de conexão. Tente novamente.");
     }
     setLoading(false);
   };
 
-  const handleKey = (e) => { if (e.key === "Enter") submit(); };
-
-  /* ── Mode picker ── */
-  if (!mode) return (
-    <div style={{ minHeight:"100dvh", background:"linear-gradient(135deg,#f0eaff 0%,#f5f6f8 60%)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+  return (
+    <div style={{ minHeight:"100dvh", background:"linear-gradient(135deg,#f0eaff 0%,#f5f6f8 60%)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}>
       <G/>
-      <div className="fu" style={{ width:"100%", maxWidth:420 }}>
-        <div style={{ textAlign:"center", marginBottom:40 }}>
-          <div style={{marginBottom:10,display:"flex",justifyContent:"center"}}>
-            <VeroLogo height={44}/>
+      <div className="fu" style={{ width:"100%", maxWidth:380 }}>
+
+        <div style={{ textAlign:"center", marginBottom:36 }}>
+          <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>
+            <VeroLogo height={48}/>
           </div>
           <div style={{ fontSize:14, color:"var(--sub)" }}>Gestão Operacional de Restaurantes</div>
         </div>
 
-        <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:16 }}>
-          {[
-            {m:"admin",icon:"admin_panel_settings",label:"Administrador",sub:"Acesso completo — gerencie toda a operação",col:"var(--accent)",bg:"var(--abg)",bdr:"var(--abr)"},
-            {m:"team", icon:"badge",               label:"Equipe",       sub:"Veja e execute suas tarefas atribuídas",  col:"var(--blue)", bg:"var(--bbg)",bdr:"var(--bbr)"},
-          ].map(({m,icon,label,sub,col,bg,bdr})=>(
-            <button key={m} onClick={()=>reset(m)}
-              style={{ background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"var(--r)", padding:"20px 22px", cursor:"pointer", display:"flex", alignItems:"center", gap:14, textAlign:"left", transition:"all .2s", boxShadow:"var(--sh)" }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor=col; e.currentTarget.style.boxShadow="var(--shm)"; e.currentTarget.style.background=bg; }}
-              onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.boxShadow="var(--sh)"; e.currentTarget.style.background="var(--surface)"; }}>
-              <div style={{ width:50, height:50, borderRadius:"var(--rs)", background:bg, border:`1px solid ${bdr}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon n={icon} s={26} c={col}/>
-              </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontFamily:"var(--fh)", fontWeight:600, fontSize:16 }}>{label}</div>
-                <div style={{ fontSize:12, color:"var(--sub)", marginTop:3 }}>{sub}</div>
-              </div>
-              <Icon n="chevron_right" s={22} c="var(--muted)"/>
-            </button>
-          ))}
-        </div>
-
-        <button onClick={onRegister}
-          style={{ width:"100%", background:"none", border:"1px dashed var(--border2)", borderRadius:"var(--rs)", padding:"13px", color:"var(--sub)", fontSize:13, fontWeight:500, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7, transition:"all .15s" }}
-          onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--accent)"; e.currentTarget.style.color="var(--accent)"; e.currentTarget.style.background="var(--abg)"; }}
-          onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--border2)"; e.currentTarget.style.color="var(--sub)"; e.currentTarget.style.background="none"; }}>
-          <Icon n="person_add" s={18}/>Criar nova conta
-        </button>
-
-      </div>
-    </div>
-  );
-
-  /* ── Email + password form ── */
-  const isAdmin = mode === "admin";
-  return (
-    <div style={{ minHeight:"100dvh", background:"linear-gradient(135deg,#f0eaff 0%,#f5f6f8 60%)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <G/>
-      <div className="fu" style={{ width:"100%", maxWidth:380 }}>
-        <button onClick={()=>reset(null)}
-          style={{ background:"none", border:"none", color:"var(--sub)", cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontSize:13, marginBottom:32, fontWeight:500 }}>
-          <Icon n="arrow_back" s={18} c="var(--sub)"/>Voltar
-        </button>
-
-        {/* Avatar + title */}
-        <div style={{ textAlign:"center", marginBottom:32 }}>
-          <div style={{ width:64, height:64, borderRadius:"50%", background:isAdmin?"var(--abg)":"var(--bbg)", border:`2px solid ${isAdmin?"var(--abr)":"var(--bbr)"}`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
-            <Icon n={isAdmin?"admin_panel_settings":"badge"} s={32} c={isAdmin?"var(--accent)":"var(--blue)"}/>
-          </div>
-          <div style={{ fontFamily:"var(--fh)", fontWeight:600, fontSize:22 }}>
-            {isAdmin ? "Acesso de Administrador" : "Acesso da Equipe"}
-          </div>
-          <div style={{ fontSize:13, color:"var(--sub)", marginTop:5 }}>
-            Entre com seu e-mail e senha cadastrados
-          </div>
-        </div>
-
-        {/* Form */}
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
           <div>
             <Lbl>E-mail</Lbl>
             <div style={{ position:"relative" }}>
-              <Icon n="mail_outline" s={18} c="var(--muted)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}/>
+              <Icon n="mail_outline" s={18} c="var(--muted)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}/>
               <input value={email} onChange={e=>{ setEmail(e.target.value); setErr(""); }}
-                onKeyDown={handleKey}
+                onKeyDown={e=>e.key==="Enter"&&submit()}
                 placeholder="seu@email.com" type="email" autoComplete="email"
-                style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border2)", borderRadius:"var(--rs)", padding:"11px 12px 11px 40px", color:"var(--text)", fontSize:14, outline:"none" }}
-                onFocus={e=>e.target.style.borderColor=isAdmin?"var(--accent)":"var(--blue)"}
+                style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border2)", borderRadius:"var(--rs)", padding:"12px 12px 12px 40px", fontSize:14, color:"var(--text)", outline:"none", boxSizing:"border-box" }}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
                 onBlur={e=>e.target.style.borderColor="var(--border2)"}/>
             </div>
           </div>
@@ -578,28 +511,28 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
           <div>
             <Lbl>Senha</Lbl>
             <div style={{ position:"relative" }}>
-              <Icon n="lock_outline" s={18} c="var(--muted)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}/>
+              <Icon n="lock_outline" s={18} c="var(--muted)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}/>
               <input value={password} onChange={e=>{ setPass(e.target.value); setErr(""); }}
-                onKeyDown={handleKey}
+                onKeyDown={e=>e.key==="Enter"&&submit()}
                 placeholder="Sua senha" type={showPass?"text":"password"} autoComplete="current-password"
-                style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border2)", borderRadius:"var(--rs)", padding:"11px 40px 11px 40px", color:"var(--text)", fontSize:14, outline:"none" }}
-                onFocus={e=>e.target.style.borderColor=isAdmin?"var(--accent)":"var(--blue)"}
+                style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border2)", borderRadius:"var(--rs)", padding:"12px 40px 12px 40px", fontSize:14, color:"var(--text)", outline:"none", boxSizing:"border-box" }}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
                 onBlur={e=>e.target.style.borderColor="var(--border2)"}/>
               <button onClick={()=>setShowP(p=>!p)}
-                style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"var(--muted)", display:"flex" }}>
+                style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:4 }}>
                 <Icon n={showPass?"visibility_off":"visibility"} s={18} c="var(--muted)"/>
               </button>
             </div>
           </div>
 
           {err && (
-            <div style={{ background:"var(--rbg)", border:"1px solid var(--rbr)", borderRadius:"var(--rs)", padding:"10px 13px", fontSize:13, color:"var(--red)", display:"flex", alignItems:"center", gap:7, animation:"fadeIn .2s" }}>
+            <div style={{ background:"var(--rbg)", border:"1px solid var(--rbr)", borderRadius:"var(--rs)", padding:"10px 14px", display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--red)" }}>
               <Icon n="error_outline" s={18} c="var(--red)"/>{err}
             </div>
           )}
 
           <Btn onClick={submit} dis={loading}
-            style={{ width:"100%", justifyContent:"center", padding:"14px", fontSize:15, marginTop:4, background:isAdmin?"var(--accent)":"var(--blue)" }}>
+            style={{ width:"100%", justifyContent:"center", padding:"14px", fontSize:15, marginTop:4, background:"var(--accent)", border:"none" }}>
             {loading ? <Icon n="hourglass_top" s={20} c="#fff"/> : <Icon n="login" s={20} c="#fff"/>}
             {loading ? "Verificando..." : "Entrar"}
           </Btn>
@@ -607,7 +540,7 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 
         <div style={{ textAlign:"center", marginTop:20, fontSize:13, color:"var(--muted)" }}>
           Não tem conta?{" "}
-          <button onClick={onRegister} style={{ background:"none", border:"none", color:"var(--accent)", cursor:"pointer", fontSize:13, fontWeight:600 }}>
+          <button onClick={onRegister} style={{ background:"none", border:"none", color:"var(--accent)", cursor:"pointer", fontWeight:600, fontSize:13 }}>
             Cadastre-se
           </button>
         </div>
@@ -615,16 +548,6 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
     </div>
   );
 }
-
-/* ═══ TEAM VIEW ══════════════════════════════════════════════════════════════
-   Full app shell for team members — sidebar nav, Dashboard, Checklists, Alerts
-══════════════════════════════════════════════════════════════════════════════*/
-const NAV_TEAM_FULL=[
-  {id:"dashboard", label:"Painel",     icon:"dashboard"},
-  {id:"checklists",label:"Checklists", icon:"checklist"},
-  {id:"tasks",     label:"Tarefas",    icon:"task_alt"},
-  {id:"alerts",    label:"Alertas",    icon:"notifications"},
-];
 
 function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout }) {
   const myCls       = cls.filter(c => c.sid === user.id);

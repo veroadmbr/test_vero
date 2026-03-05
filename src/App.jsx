@@ -861,7 +861,6 @@ function TeamCls({ cls, onOpenCl, isLeader, sectorPeers, tpls, sectors, onAddCl,
   const [filter,setFilter] = useState("all");
   const FILTERS=[{id:"all",l:"Todos"},{id:"alert",l:"Alertas"},{id:"in_progress",l:"Em andamento"},{id:"done",l:"Concluídos"},{id:"pending",l:"Pendentes"}];
   const list = filter==="all" ? cls : cls.filter(c=>c.st===filter);
-  const PRIO={high:{c:"var(--red)",bg:"var(--rbg)",label:"Alta"},medium:{c:"var(--warn)",bg:"var(--wbg)",label:"Média"},low:{c:"var(--accent)",bg:"var(--abg)",label:"Baixa"}};
   return (
     <>
     <div className="pp fu">

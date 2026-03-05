@@ -1871,7 +1871,7 @@ export default function App() {
 function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPending}){
   const all  = cls.flatMap(c=>c.items);
   const ov   = all.length ? Math.round(all.filter(i=>i.done).length/all.length*100) : 0;
-  const top  = [...staff].sort((a,b)=>b.score-a.score).slice(0,3);
+  const top  = [...staff].filter(s=>!s.admin&&s.status==="approved").map(s=>({...s,pending:(tasks||[]).filter(t=>t.sid===s.id&&!t.done).length})).sort((a,b)=>b.pending-a.pending).slice(0,3);
   const clsPending   = cls.filter(c=>c.st!=="done").length;
   const tasksPending = tasks.filter(t=>!t.done).length;
 
@@ -1947,18 +1947,25 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
         <Card style={{padding:0,overflow:"hidden"}}>
           <div style={{padding:"14px 18px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,display:"flex",alignItems:"center",gap:6}}>
-              <Icon n="emoji_events" s={20} c="var(--sub)"/>Top Funcionários
+              <Icon n="group" s={20} c="var(--sub)"/>Progresso da Equipe
             </div>
             <button onClick={()=>setPage("staff")} style={{background:"none",border:"none",color:"var(--accent)",cursor:"pointer",fontSize:12,fontWeight:600,display:"flex",alignItems:"center",gap:4}}>
               Ver todos<Icon n="arrow_forward" s={16} c="var(--accent)"/>
             </button>
           </div>
-          {top.map((s,i)=>(
-            <div key={s.id} style={{padding:"11px 18px",borderBottom:i<2?"1px solid var(--border)":"none",display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,color:["#f59e0b","#94a3b8","#cd7f32"][i],width:18}}>{i+1}</span>
-              <Av v={s.av} sz={30} bg={i===0?"#fef9c3":"var(--surface)"} co={i===0?"#854d0e":"#4b5563"}/>
-              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500}}>{s.name}</div><Bar v={s.score} h={4}/></div>
-              <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,color:s.score>=80?"var(--accent)":"var(--text)"}}>{s.score}</span>
+          {top.length===0
+            ? <div style={{padding:"28px 18px",textAlign:"center",color:"var(--muted)",fontSize:13}}>Nenhuma tarefa pendente</div>
+            : top.map((s,i)=>(
+            <div key={s.id} style={{padding:"13px 18px",borderBottom:i<top.length-1?"1px solid var(--border)":"none",display:"flex",alignItems:"center",gap:12}}>
+              <Av v={s.av} sz={32} bg="var(--surface)" co="#4b5563"/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.name}</div>
+                <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{s.role||"Equipe"}</div>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",minWidth:48}}>
+                <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:22,lineHeight:1,color:s.pending>0?"var(--warn)":"var(--accent)"}}>{s.pending}</span>
+                <span style={{fontSize:10,color:"var(--muted)",marginTop:2}}>pendentes</span>
+              </div>
             </div>
           ))}
         </Card>

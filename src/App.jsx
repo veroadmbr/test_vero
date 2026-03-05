@@ -1890,7 +1890,7 @@ function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onT
 }
 
 /* ═══ TEMPLATES ═════════════════════════════════════════════════════════════ */
-function Tpls({tpls,onUse,onDel,onNew}){
+function Tpls({tpls,onUse,onDel,onEdit,onDuplicate,onNew}){
   const cats=[...new Set(tpls.map(t=>t.cat))];
   return(
     <div className="pp fu">
@@ -1903,21 +1903,20 @@ function Tpls({tpls,onUse,onDel,onNew}){
       </div>
       {cats.map(cat=>(
         <div key={cat} style={{marginBottom:28}}>
-          <div style={{fontSize:11,fontWeight:700,color:"var(--sub)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:12}}>{cat}</div>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--sub)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>{cat}</div>
           <div className="cg" style={{display:"grid",gap:12}}>
             {tpls.filter(t=>t.cat===cat).map((tpl,i)=>(
               <Card key={tpl.id} style={{padding:"16px",animation:`fadeUp ${.15+i*.04}s ease`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                   <div style={{display:"flex",gap:10,alignItems:"center"}}>
                     <Icon n="description" s={22} c="var(--accent)"/>
                     <div>
                       <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14}}>{tpl.name}</div>
-                      <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
+                      <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
                         <Icon n="assignment" s={12} c="var(--muted)"/>{tpl.items.length} itens
                       </div>
                     </div>
                   </div>
-                  <Btn sz="s" v="d" onClick={()=>onDel(tpl)}><Icon n="delete_outline" s={20}/></Btn>
                 </div>
                 <div style={{marginBottom:14,display:"flex",flexDirection:"column",gap:4}}>
                   {tpl.items.slice(0,3).map((it,i)=>(
@@ -1927,9 +1926,17 @@ function Tpls({tpls,onUse,onDel,onNew}){
                   ))}
                   {tpl.items.length>3&&<div style={{fontSize:11,color:"var(--muted)",marginLeft:19}}>+{tpl.items.length-3} mais</div>}
                 </div>
-                <Btn v="o" onClick={()=>onUse(tpl.id)} style={{width:"100%",justifyContent:"center"}}>
-                  <Icon n="play_arrow" s={20}/>Usar Template
-                </Btn>
+                <div style={{display:"flex",gap:8}}>
+                  <Btn v="o" onClick={()=>onUse(tpl.id)} style={{flex:1,justifyContent:"center"}}>
+                    <Icon n="play_arrow" s={18}/>Usar Template
+                  </Btn>
+                  <Btn v="o" onClick={()=>onDuplicate(tpl)} style={{flex:1,justifyContent:"center"}}>
+                    <Icon n="content_copy" s={18}/>Duplicar
+                  </Btn>
+                  <Btn v="o" onClick={()=>onEdit(tpl)} style={{flex:1,justifyContent:"center"}}>
+                    <Icon n="edit" s={18}/>Editar
+                  </Btn>
+                </div>
               </Card>
             ))}
           </div>

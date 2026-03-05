@@ -1,4 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+
+      {deleteMemberModal && <DeleteMemberModal
+        member={deleteMemberModal}
+        onClose={()=>setDeleteMemberModal(null)}
+        onConfirm={member=>{
+          setStaff(p=>p.filter(s=>s.id!==member.id));
+          setDeleteMemberModal(null);
+          (async()=>{const r=await db.deleteStaff(member.id);if(r?.error)console.error(r.error)})();
+        }}
+      />}import { useState, useEffect, useRef } from "react";
 import { db, fromDbStaff, fromDbTemplate, fromDbChecklist, fromDbTask, fromDbAlert, fromDbSector } from "./supabase";
 
 const Icon = ({ n, s = 20, c = "currentColor", style: sx }) => (
@@ -1649,7 +1658,7 @@ export default function App() {
           {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
           {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} user={session.user} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
           {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
-          {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)}/>}
+          {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)} onDeleteMember={m=>setDeleteMemberModal(m)}/>}
           {page==="alerts"     && <Alts  alerts={alerts} onMarkAll={()=>setAlerts(p=>p.map(a=>({...a,read:true})))} onAlert={onAlert}/>}
         </div>
 
@@ -2079,7 +2088,7 @@ function Tpls({tpls,onUse,onDel,onNew}){
 }
 
 /* ═══ STAFF ═════════════════════════════════════════════════════════════════*/
-function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onOpenSectors }) {
+function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onDeleteMember, onOpenSectors }) {
   const ranked  = [...staff].filter(s=>s.status!=="pending").sort((a,b)=>b.score-a.score);
   const MROLE   = { admin:"Admin", leader:"Líder", base:"Equipe Base", team:"Equipe" };
   const MCOLOR  = { admin:{c:"var(--accent)",bg:"var(--abg)"}, leader:{c:"var(--blue)",bg:"var(--bbg)"}, base:{c:"var(--sub)",bg:"var(--bg)"}, team:{c:"var(--sub)",bg:"var(--bg)"} };
@@ -2187,6 +2196,14 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onOp
                 onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--sub)";e.currentTarget.style.background="var(--bg)";}}>
                 <Icon n="edit" s={15}/>Editar
               </button>
+              {onDeleteMember&&!s.admin&&(
+                <button onClick={()=>onDeleteMember(s)}
+                  style={{background:"var(--bg)",border:"1px solid var(--border2)",borderRadius:"var(--rs)",padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--muted)",display:"flex",alignItems:"center",gap:5,marginLeft:6,transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="var(--bg)";}}>
+                  <Icon n="person_remove" s={15}/>Excluir
+                </button>
+              )}
             </Card>
           );
         })}
@@ -2195,6 +2212,60 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onOp
   );
 }
 
+
+
+/* ═══ DELETE MEMBER PIN MODAL ═══════════════════════════════════════════════ */
+function DeleteMemberModal({ member, onConfirm, onClose }) {
+  const [pin, setPin] = useState("");
+  const [err, setErr] = useState("");
+  const PIN = "1109";
+  const submit = () => {
+    if (pin !== PIN) { setErr("PIN incorreto. Tente novamente."); setPin(""); return; }
+    onConfirm(member);
+  };
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:20}}>
+      <div style={{background:"var(--surface)",borderRadius:"var(--r)",padding:28,width:"100%",maxWidth:360,boxShadow:"var(--shm)",animation:"fadeUp .15s ease"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
+          <div style={{width:40,height:40,borderRadius:"50%",background:"var(--rbg)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <Icon n="person_remove" s={22} c="var(--red)"/>
+          </div>
+          <div>
+            <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:16}}>Excluir membro</div>
+            <div style={{fontSize:13,color:"var(--sub)",marginTop:2}}>Esta ação é permanente e não pode ser desfeita.</div>
+          </div>
+        </div>
+        <div style={{background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"10px 14px",marginBottom:18,display:"flex",alignItems:"center",gap:8}}>
+          <Icon n="warning_amber" s={16} c="var(--red)"/>
+          <span style={{fontSize:13,color:"var(--red)",fontWeight:600}}>{member.name} será removido permanentemente.</span>
+        </div>
+        <div style={{marginBottom:16}}>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--sub)",display:"block",marginBottom:6}}>Digite o PIN de administrador para confirmar</label>
+          <input
+            type="password"
+            value={pin}
+            onChange={e=>{setPin(e.target.value);setErr("");}}
+            onKeyDown={e=>e.key==="Enter"&&submit()}
+            placeholder="PIN"
+            maxLength={4}
+            autoFocus
+            style={{width:"100%",padding:"10px 14px",border:`1px solid ${err?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",fontSize:16,letterSpacing:8,background:"var(--bg)",color:"var(--text)",outline:"none",textAlign:"center",boxSizing:"border-box"}}
+          />
+          {err&&<div style={{color:"var(--red)",fontSize:12,marginTop:6,display:"flex",alignItems:"center",gap:4}}><Icon n="error_outline" s={14} c="var(--red)"/>{err}</div>}
+        </div>
+        <div style={{display:"flex",gap:10}}>
+          <Btn v="o" style={{flex:1}} onClick={onClose}>Cancelar</Btn>
+          <button onClick={submit}
+            style={{flex:1,padding:"10px 16px",background:"var(--red)",border:"none",borderRadius:"var(--rs)",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}
+            onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+            <Icon n="delete_forever" s={16} c="#fff"/>Excluir membro
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ═══ ALERTS ════════════════════════════════════════════════════════════════ */
 function Alts({alerts,onMarkAll,onAlert}){

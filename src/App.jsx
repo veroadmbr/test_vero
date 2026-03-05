@@ -631,7 +631,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
   const leaderTasks = isLeader ? tasks.filter(t =>
-    t.createdBySid === user.id || adminStaffIds.includes(t.createdBySid)
+    t.createdBySid === user.id || adminStaffIds.includes(t.createdBySid) || (t.sid === user.id && !t.createdBySid)
   ) : [];
   const myAlerts = alerts.filter(a => a.sid === user.id);
   const unread   = myAlerts.filter(a=>!a.read).length;
@@ -2674,7 +2674,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
     return true;
   });
 
-  const adminTasks  = applyFilters(tasks.filter(t => adminIds.includes(t.createdBySid)));
+  const adminTasks  = applyFilters(tasks.filter(t => adminIds.includes(t.createdBySid) || (t.sid === user.id && !t.createdBySid)));
   const myTasks     = applyFilters(tasks.filter(t => t.createdBySid === user.id));
   const visible     = taskTab === "admin" ? adminTasks : myTasks;
 

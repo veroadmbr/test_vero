@@ -71,7 +71,7 @@ export const fromDbTask = (r) => ({
   sid: r.sid, done: r.done, dueDate: r.due_date,
   createdAt: r.created_at ? r.created_at.slice(0, 10) : '',
   creatorId: r.creator_id,
-  createdBySid: r.creator_id || null,
+  createdBySid: r.created_by_sid || r.creator_id || null,
   section: r.section,
 });
 
@@ -108,6 +108,7 @@ const toDbTask = (r) => ({
   id: r.id, title: r.title, description: r.desc || null, priority: r.priority,
   sid: r.sid || null, done: r.done, due_date: r.dueDate || null,
   creator_id: r.createdBySid || r.creatorId || null,
+  created_by_sid: r.createdBySid || null,
   section: r.section || null,
 });
 

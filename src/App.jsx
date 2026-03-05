@@ -1693,8 +1693,21 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
   const all  = cls.flatMap(c=>c.items);
   const ov   = all.length ? Math.round(all.filter(i=>i.done).length/all.length*100) : 0;
   const top  = [...staff].sort((a,b)=>b.score-a.score).slice(0,3);
-  const clsPending  = cls.filter(c=>c.st!=="done");
-  const tasksPending = tasks.filter(t=>!t.done);
+  const clsPending   = cls.filter(c=>c.st!=="done").length;
+  const tasksPending = tasks.filter(t=>!t.done).length;
+
+  const StatCard = ({icon, label, val, color, bg, onClick}) => (
+    <Card style={{padding:"18px 20px",cursor:onClick?"pointer":"default"}} onClick={onClick}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+        <div style={{width:36,height:36,borderRadius:"var(--rs)",background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <Icon n={icon} s={20} c={color}/>
+        </div>
+        {onClick&&<Icon n="arrow_forward_ios" s={13} c="var(--border2)"/>}
+      </div>
+      <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:32,color,lineHeight:1}}>{val}</div>
+      <div style={{fontSize:12,color:"var(--sub)",marginTop:6,fontWeight:500}}>{label}</div>
+    </Card>
+  );
 
   return(
     <div className="pp fu">
@@ -1703,7 +1716,6 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
         <p style={{fontSize:13,color:"var(--sub)",marginTop:3}}>Visão geral da operação de hoje</p>
       </div>
 
-      {/* Pending members banner */}
       {pending&&pending.length>0&&(
         <div onClick={onOpenPending} style={{background:"var(--wbg)",border:"1.5px solid var(--wbr)",borderRadius:"var(--r)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,marginBottom:20,cursor:"pointer"}}>
           <div style={{width:38,height:38,borderRadius:"50%",background:"var(--warn)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -1711,7 +1723,7 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
           </div>
           <div style={{flex:1}}>
             <div style={{fontWeight:600,fontSize:13}}>{pending.length} cadastro{pending.length!==1?"s":""} aguardando aprovação</div>
-            <div style={{fontSize:12,color:"var(--sub)",marginTop:1}}>Clique para revisar e aprovar ou reprovar</div>
+            <div style={{fontSize:12,color:"var(--sub)",marginTop:1}}>Clique para revisar</div>
           </div>
           <Icon n="arrow_forward_ios" s={15} c="var(--warn)"/>
         </div>
@@ -1724,75 +1736,19 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
             <Icon n="trending_up" s={20} c="var(--accent)"/>
             <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15}}>Progresso Geral</span>
           </div>
-          <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:28,color:"var(--accent)"}}>{ov}%</span>
+          <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:32,color:"var(--accent)"}}>{ov}%</span>
         </div>
         <Bar v={ov} h={10}/>
         <div style={{fontSize:12,color:"var(--sub)",marginTop:8}}>{all.filter(i=>i.done).length} de {all.length} itens concluídos</div>
       </Card>
 
-      {/* Tarefas Pendentes */}
-      <Card style={{padding:"18px 20px",marginBottom:16,cursor:"pointer"}} onClick={()=>setPage("tasks")}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:tasksPending.length>0?14:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:7}}>
-            <Icon n="pending_actions" s={20} c="var(--warn)"/>
-            <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15}}>Tarefas Pendentes</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:26,color:"var(--warn)"}}>{tasksPending.length}</span>
-            <Icon n="arrow_forward_ios" s={13} c="var(--muted)"/>
-          </div>
-        </div>
-        {tasksPending.slice(0,3).map(t=>{
-          const PRIO={high:{c:"var(--red)",bg:"var(--rbg)",label:"Alta"},medium:{c:"var(--warn)",bg:"var(--wbg)",label:"Média"},low:{c:"var(--accent)",bg:"var(--abg)",label:"Baixa"}};
-          const pr=PRIO[t.priority]||PRIO.medium;
-          const m=staff.find(s=>s.id===t.sid);
-          return(
-            <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderTop:"1px solid var(--border)"}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:pr.c,flexShrink:0}}/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.title}</div>
-                {m&&<div style={{fontSize:11,color:"var(--sub)",marginTop:1}}>{m.name}</div>}
-              </div>
-              <span style={{fontSize:11,fontWeight:600,color:pr.c,background:pr.bg,borderRadius:100,padding:"2px 8px",flexShrink:0}}>{pr.label}</span>
-            </div>
-          );
-        })}
-        {tasksPending.length===0&&<div style={{fontSize:13,color:"var(--muted)",textAlign:"center",paddingTop:4}}>Nenhuma tarefa pendente 🎉</div>}
-      </Card>
+      {/* Stat cards */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+        <StatCard icon="pending_actions" label="Tarefas pendentes"    val={tasksPending} color="var(--warn)"   bg="var(--wbg)" onClick={()=>setPage("tasks")}/>
+        <StatCard icon="checklist"       label="Checklists pendentes" val={clsPending}   color="var(--blue)"   bg="var(--bbg)" onClick={()=>setPage("checklists")}/>
+      </div>
 
-      {/* Checklists Pendentes */}
-      <Card style={{padding:"18px 20px",marginBottom:20,cursor:"pointer"}} onClick={()=>setPage("checklists")}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:clsPending.length>0?14:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:7}}>
-            <Icon n="checklist" s={20} c="var(--blue)"/>
-            <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15}}>Checklists Pendentes</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:26,color:"var(--blue)"}}>{clsPending.length}</span>
-            <Icon n="arrow_forward_ios" s={13} c="var(--muted)"/>
-          </div>
-        </div>
-        {clsPending.slice(0,3).map((cl,i)=>{
-          const p=pct(cl.items);
-          const m=staff.find(s=>s.id===cl.sid);
-          return(
-            <div key={cl.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderTop:"1px solid var(--border)"}}>
-              <span style={{fontSize:18,flexShrink:0}}>{cl.icon}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{cl.name}</div>
-                {m&&<div style={{fontSize:11,color:"var(--sub)",marginTop:1}}>{m.name}</div>}
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-                <SPill s={cl.st}/>
-                <span style={{fontSize:11,fontWeight:600,color:"var(--sub)"}}>{p}%</span>
-              </div>
-            </div>
-          );
-        })}
-        {clsPending.length===0&&<div style={{fontSize:13,color:"var(--muted)",textAlign:"center",paddingTop:4}}>Todos os checklists concluídos 🎉</div>}
-      </Card>
-
-      {/* Bottom grid: checklists recentes + top funcionários */}
+      {/* Bottom grid */}
       <div className="g2" style={{display:"grid",gap:16}}>
         <Card style={{padding:0,overflow:"hidden"}}>
           <div style={{padding:"14px 18px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid var(--border)"}}>

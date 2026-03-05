@@ -1,13 +1,4 @@
-
-      {deleteMemberModal && <DeleteMemberModal
-        member={deleteMemberModal}
-        onClose={()=>setDeleteMemberModal(null)}
-        onConfirm={member=>{
-          setStaff(p=>p.filter(s=>s.id!==member.id));
-          setDeleteMemberModal(null);
-          (async()=>{const r=await db.deleteStaff(member.id);if(r?.error)console.error(r.error)})();
-        }}
-      />}import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db, fromDbStaff, fromDbTemplate, fromDbChecklist, fromDbTask, fromDbAlert, fromDbSector } from "./supabase";
 
 const Icon = ({ n, s = 20, c = "currentColor", style: sx }) => (
@@ -1294,6 +1285,7 @@ export default function App() {
   const [editMemberM, setEditMemberM] = useState(null); // member object being edited
   const [userMenu,    setUserMenu]    = useState(false);
   const [sectorsM,    setSectorsM]    = useState(false);
+  const [deleteMemberModal, setDeleteMemberModal] = useState(null);
   const [loading,     setLoading]     = useState(true);
   const [dbError,     setDbError]     = useState(null);
 

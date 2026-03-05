@@ -64,6 +64,7 @@ export const fromDbChecklist = (r) => ({
   dueTime: r.due_time, lastReset: r.last_reset,
   overdueAlertSent: r.overdue_alert_sent,
   items: typeof r.items === 'string' ? JSON.parse(r.items) : (r.items || []),
+  createdBySid: r.created_by_sid || null,
 });
 
 export const fromDbTask = (r) => ({
@@ -102,6 +103,7 @@ const toDbChecklist = (r) => ({
   due: r.due, st: r.st, freq: r.freq || null, days: r.days || [],
   due_time: r.dueTime || null, last_reset: r.lastReset || null,
   overdue_alert_sent: r.overdueAlertSent || false, items: r.items,
+  created_by_sid: r.createdBySid || null,
 });
 
 const toDbTask = (r) => ({

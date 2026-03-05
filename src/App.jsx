@@ -1508,7 +1508,7 @@ export default function App() {
   };
   const onAlert=(al)=>{
     if(!al.link)return;
-    setAlerts(p=>p.map(a=>a.id===al.id?{...a,read:true}:a));
+    setAlerts(p=>p.map(a=>{ if(a.id!==al.id) return a; const u={...a,read:true}; db.upsertAlert(u).catch(console.error); return u; }));
     if(al.link.action==="pending"){setPendingModal(true);return;}
     if(al.link.cid){const t=cls.find(c=>c.id===al.link.cid);if(t){setOpenCl(t);setHlCl(al.link.cid);}}
     setPage(al.link.page||"dashboard");
@@ -1555,6 +1555,7 @@ export default function App() {
       onAddCl={isLeader?(tid,sid,freq,days,dueTime)=>addCl(tid,sid,freq,days,dueTime):null}
       onAddTask={(task)=>addTask({...task,createdBySid:session.user.id})}
       onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))delTask(id);}}
+      onMarkAlertRead={(id)=>{ setAlerts(p=>p.map(a=>{ if(a.id!==id) return a; const u={...a,read:true}; db.upsertAlert(u).catch(console.error); return u; })); }}
       onLogout={()=>setSession(null)}/>;
   }
 

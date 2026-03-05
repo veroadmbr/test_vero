@@ -2022,7 +2022,7 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onDe
                 onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--sub)";e.currentTarget.style.background="var(--bg)";}}>
                 <Icon n="edit" s={15}/>Editar
               </button>
-              {onDeleteMember&&!s.admin&&(
+              {onDeleteMember&&(
                 <button onClick={()=>onDeleteMember(s)}
                   style={{background:"var(--bg)",border:"1px solid var(--border2)",borderRadius:"var(--rs)",padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--muted)",display:"flex",alignItems:"center",gap:5,marginLeft:6,transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
@@ -2044,29 +2044,36 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onDe
 function DeleteMemberModal({ member, onConfirm, onClose }) {
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
-  const PIN = "1109";
+  const PIN = member.admin ? "4473" : "1109";
+  const isAdmin = member.admin;
   const submit = () => {
     if (pin !== PIN) { setErr("PIN incorreto. Tente novamente."); setPin(""); return; }
     onConfirm(member);
   };
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:20}}>
-      <div style={{background:"var(--surface)",borderRadius:"var(--r)",padding:28,width:"100%",maxWidth:360,boxShadow:"var(--shm)",animation:"fadeUp .15s ease"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:"20px"}}>
+      <div style={{background:"var(--surface)",borderRadius:"var(--r)",padding:28,width:"100%",maxWidth:360,boxShadow:"var(--shm)",animation:"fadeUp .18s ease"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
           <div style={{width:40,height:40,borderRadius:"50%",background:"var(--rbg)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <Icon n="person_remove" s={22} c="var(--red)"/>
+            <Icon n={isAdmin?"admin_panel_settings":"person_remove"} s={22} c="var(--red)"/>
           </div>
           <div>
-            <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:16}}>Excluir membro</div>
+            <div style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:16}}>Excluir {isAdmin?"administrador":"membro"}</div>
             <div style={{fontSize:13,color:"var(--sub)",marginTop:2}}>Esta ação é permanente e não pode ser desfeita.</div>
           </div>
         </div>
-        <div style={{background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"10px 14px",marginBottom:18,display:"flex",alignItems:"center",gap:8}}>
+        {isAdmin&&(
+          <div style={{background:"#fff3cd",border:"1px solid #ffc107",borderRadius:"var(--rs)",padding:"10px 12px",marginBottom:14,display:"flex",alignItems:"center",gap:8}}>
+            <Icon n="shield" s={16} c="#856404"/>
+            <span style={{fontSize:12,color:"#856404",fontWeight:600}}>Conta de administrador — PIN especial necessário</span>
+          </div>
+        )}
+        <div style={{background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"10px 12px",marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
           <Icon n="warning_amber" s={16} c="var(--red)"/>
           <span style={{fontSize:13,color:"var(--red)",fontWeight:600}}>{member.name} será removido permanentemente.</span>
         </div>
         <div style={{marginBottom:16}}>
-          <label style={{fontSize:12,fontWeight:600,color:"var(--sub)",display:"block",marginBottom:6}}>Digite o PIN de administrador para confirmar</label>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--sub)",display:"block",marginBottom:6}}>Digite o PIN de confirmação</label>
           <input
             type="password"
             value={pin}
@@ -2075,17 +2082,17 @@ function DeleteMemberModal({ member, onConfirm, onClose }) {
             placeholder="PIN"
             maxLength={4}
             autoFocus
-            style={{width:"100%",padding:"10px 14px",border:`1px solid ${err?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",fontSize:16,letterSpacing:8,background:"var(--bg)",color:"var(--text)",outline:"none",textAlign:"center",boxSizing:"border-box"}}
+            style={{width:"100%",padding:"10px 14px",border:`1px solid ${err?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",fontSize:18,letterSpacing:8,textAlign:"center",background:"var(--bg)",color:"var(--text)",outline:"none",boxSizing:"border-box"}}
           />
-          {err&&<div style={{color:"var(--red)",fontSize:12,marginTop:6,display:"flex",alignItems:"center",gap:4}}><Icon n="error_outline" s={14} c="var(--red)"/>{err}</div>}
+          {err&&<div style={{color:"var(--red)",fontSize:12,marginTop:6,display:"flex",alignItems:"center",gap:5}}><Icon n="error_outline" s={14} c="var(--red)"/>{err}</div>}
         </div>
         <div style={{display:"flex",gap:10}}>
           <Btn v="o" style={{flex:1}} onClick={onClose}>Cancelar</Btn>
           <button onClick={submit}
-            style={{flex:1,padding:"10px 16px",background:"var(--red)",border:"none",borderRadius:"var(--rs)",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}
+            style={{flex:1,padding:"10px 16px",background:"var(--red)",border:"none",borderRadius:"var(--rs)",color:"#fff",fontWeight:600,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}
             onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
             onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-            <Icon n="delete_forever" s={16} c="#fff"/>Excluir membro
+            <Icon n="delete_forever" s={16} c="#fff"/>Excluir {isAdmin?"administrador":"membro"}
           </button>
         </div>
       </div>

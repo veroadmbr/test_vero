@@ -70,7 +70,9 @@ export const fromDbTask = (r) => ({
   id: r.id, title: r.title, desc: r.description, priority: r.priority,
   sid: r.sid, done: r.done, dueDate: r.due_date,
   createdAt: r.created_at ? r.created_at.slice(0, 10) : '',
-  creatorId: r.creator_id, section: r.section,
+  creatorId: r.creator_id,
+  createdBySid: r.creator_id || null,
+  section: r.section,
 });
 
 export const fromDbAlert = (r) => ({
@@ -105,7 +107,8 @@ const toDbChecklist = (r) => ({
 const toDbTask = (r) => ({
   id: r.id, title: r.title, description: r.desc || null, priority: r.priority,
   sid: r.sid || null, done: r.done, due_date: r.dueDate || null,
-  creator_id: r.creatorId || null, section: r.section || null,
+  creator_id: r.createdBySid || r.creatorId || null,
+  section: r.section || null,
 });
 
 const toDbAlert = (r) => ({

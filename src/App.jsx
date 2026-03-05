@@ -1479,7 +1479,16 @@ export default function App() {
     setConfirm(null);
     db.deleteChecklist(id).catch(console.error);
   };
-    const addTask  =(task)=>{ setTasks(p=>[{...task,id:"tk"+Date.now(),done:false,createdAt:new Date().toLocaleDateString("pt-BR"),createdBySid:task.createdBySid||null},...p]); setAddTaskM(false); const m=staff.find(s=>s.id===task.sid); setAlerts(p=>[{id:"tka"+Date.now(),type:"info",title:`Nova tarefa: ${task.title}`,body:`Atribuída a ${m?.name||"—"}${task.dueDate?` · Prazo: ${task.dueDate}`:""}`,time:"agora",read:false,link:{page:"checklists"},sid:task.sid,forAdmins:true},...p]); };
+    const addTask  =(task)=>{
+    const nt={...task,id:"tk"+Date.now(),done:false,createdAt:new Date().toLocaleDateString("pt-BR"),createdBySid:task.createdBySid||null};
+    const m=staff.find(s=>s.id===task.sid);
+    const al={id:"tka"+Date.now(),type:"info",title:`Nova tarefa: ${task.title}`,body:`Atribuída a ${m?.name||"—"}${task.dueDate?` · Prazo: ${task.dueDate}`:""}`,time:"agora",read:false,link:{page:"checklists"},sid:task.sid,forAdmins:true};
+    setTasks(p=>[nt,...p]);
+    setAlerts(p=>[al,...p]);
+    setAddTaskM(false);
+    db.upsertTask(nt).catch(console.error);
+    db.upsertAlert(al).catch(console.error);
+  };
   const toggleTask=(id)=>{
     setTasks(p=>{const next=p.map(t=>t.id===id?{...t,done:!t.done}:t);
       const upd=next.find(t=>t.id===id);if(upd)db.upsertTask(upd).catch(console.error);

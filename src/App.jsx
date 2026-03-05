@@ -554,7 +554,7 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
   );
 }
 
-function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout }) {
+function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout, onEditCl, onDeleteCl, onDuplicateCl }) {
   const myCls       = cls.filter(c => c.sid === user.id);
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
@@ -564,8 +564,9 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
   const myAlerts = alerts.filter(a => a.sid === user.id);
   const unread   = myAlerts.filter(a=>!a.read).length;
   const [page,   setPage]   = useState("dashboard");
-  const [openCl, setOpenCl] = useState(null);
-  const [showTaskM, setShowTaskM] = useState(false);
+  const [openCl,     setOpenCl]     = useState(null);
+  const [editClM,    setEditClM]    = useState(null);
+  const [showTaskM,  setShowTaskM]  = useState(false);
   const [showMyTaskM, setShowMyTaskM] = useState(false);
   const [userMenu,    setUserMenu]    = useState(false);
 
@@ -653,7 +654,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
         {/* Main content */}
         <div className="ma">
           {page==="dashboard"  && <TeamDash  user={user} cls={myCls} tasks={myTasks} onOpenCl={setOpenCl} setPage={setPage} onToggleTask={onToggleTask}/>}
-          {page==="checklists" && <TeamCls   cls={myCls} onOpenCl={setOpenCl} isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls} sectors={sectors} onAddCl={onAddCl} onAddTask={onAddTask}/>}
+          {page==="checklists" && <TeamCls   cls={myCls} user={user} onOpenCl={setOpenCl} isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls} sectors={sectors} onAddCl={onAddCl} onAddTask={onAddTask} onEditCl={onEditCl} onDeleteCl={onDeleteCl} onDuplicateCl={onDuplicateCl} onOpenEditCl={setEditClM}/>}
           {page==="tasks"      && isLeader && <LeaderTasks tasks={leaderTasks} staff={staff} sectors={sectors} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowTaskM(true)} onDelTask={onDelTask}/>}
           {page==="tasks"      && !isLeader && <MyTasks tasks={myTasks} user={user} onToggleTask={onToggleTask} onAddTask={()=>setShowMyTaskM(true)} onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))onDelTask&&onDelTask(id);}}/>}
           {page==="alerts"     && <TeamAlerts alerts={myAlerts}/>}
@@ -690,6 +691,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
       )}
       {showTaskM && isLeader && <AddTaskModal staff={sectorPeers} onClose={()=>setShowTaskM(false)} onAdd={(task)=>{onAddTask({...task,createdBySid:user.id});setShowTaskM(false);}}/> }
       {showMyTaskM && !isLeader && <AddTaskModal staff={[user]} onClose={()=>setShowMyTaskM(false)} onAdd={(task)=>{onAddTask&&onAddTask({...task,sid:user.id,createdBySid:user.id});setShowMyTaskM(false);}}/>}
+      {editClM && onEditCl && <EditClModal cl={editClM} staff={sectorPeers||[]} onClose={()=>setEditClM(null)} onSave={(updated)=>{onEditCl(updated);setEditClM(null);}}/> }
     </>
   );
 }
@@ -744,19 +746,18 @@ function TeamDash({ user, cls, tasks, onOpenCl, setPage, onToggleTask }) {
 }
 
 /* ── Team Checklists page ───────────────────────────────────────────────── */
-function TeamCls({ cls, onOpenCl, isLeader, sectorPeers, tpls, sectors, onAddCl, onAddTask }) {
-  const [showAddCl,   setShowAddCl]  = useState(false);
-  const [filter,setFilter] = useState("all");
+function TeamCls({ cls, user, onOpenCl, isLeader, sectorPeers, tpls, sectors, onAddCl, onAddTask, onEditCl, onDeleteCl, onDuplicateCl, onOpenEditCl }) {
+  const [showAddCl, setShowAddCl] = useState(false);
+  const [filter,    setFilter]    = useState("all");
   const FILTERS=[{id:"all",l:"Todos"},{id:"alert",l:"Alertas"},{id:"in_progress",l:"Em andamento"},{id:"done",l:"Concluídos"},{id:"pending",l:"Pendentes"}];
   const list = filter==="all" ? cls : cls.filter(c=>c.st===filter);
   return (
     <>
     <div className="pp fu">
-      {/* ── Checklists ── */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:18}}>
         <div>
           <h1 style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:22}}>{isLeader?"Checklists do Setor":"Meus Checklists"}</h1>
-          <p style={{fontSize:13,color:"var(--sub)",marginTop:3}}>{isLeader?`${cls.length} no setor`:`${cls.length} atribuídos a você`}</p>
+          <p style={{fontSize:13,color:"var(--sub)",marginTop:3}}>{isLeader?`${cls.length} no setor`:`${cls.length} atribuído${cls.length!==1?"s":""}`}</p>
         </div>
         {isLeader&&(
           <div style={{display:"flex",gap:8}}>
@@ -767,53 +768,109 @@ function TeamCls({ cls, onOpenCl, isLeader, sectorPeers, tpls, sectors, onAddCl,
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:18}}>
         {FILTERS.map(f=>(
           <button key={f.id} onClick={()=>setFilter(f.id)}
-            style={{padding:"5px 13px",borderRadius:100,border:filter===f.id?"1px solid var(--accent)":"1px solid var(--border2)",background:filter===f.id?"var(--abg)":"transparent",color:filter===f.id?"var(--accent)":"var(--sub)",fontSize:12,fontWeight:600,cursor:"pointer",transition:"all .15s"}}>
+            style={{padding:"5px 13px",borderRadius:100,border:filter===f.id?"1px solid var(--accent)":"1px solid var(--border)",background:filter===f.id?"var(--abg)":"var(--surface)",color:filter===f.id?"var(--accent)":"var(--sub)",fontSize:12,fontWeight:filter===f.id?600:400,cursor:"pointer"}}>
             {f.l}
           </button>
         ))}
       </div>
       {list.length===0?(
-        <div style={{textAlign:"center",padding:"40px 20px",marginBottom:24,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r)"}}>
+        <div style={{textAlign:"center",padding:"40px 20px",marginBottom:24,background:"var(--surface)",border:"1.5px dashed var(--border)",borderRadius:"var(--r)"}}>
           <Icon n="search_off" s={40} c="var(--border2)"/>
           <div style={{marginTop:10,color:"var(--muted)",fontSize:14}}>Nenhum checklist neste filtro.</div>
         </div>
       ):(
-        <div style={{marginBottom:32}}>
-          {list.map((cl,i)=>{
-            const p=pct(cl.items);
+        <div style={{marginBottom:32,display:"flex",flexDirection:"column",gap:10}}>
+          {list.map((cl)=>{
+            const p   = pct(cl.items);
+            const isOwner = isLeader && cl.createdBySid === user.id;
             return(
-              <div key={cl.id} onClick={()=>onOpenCl(cl)}
-                style={{background:"var(--surface)",border:`1.5px solid ${cl.st==="alert"?"var(--rbr)":cl.st==="done"?"var(--abr)":"var(--border)"}`,borderRadius:"var(--r)",padding:"16px",marginBottom:12,cursor:"pointer",transition:"all .18s",boxShadow:"var(--sh)",animation:`fadeUp ${.1+i*.04}s ease`}}
-                onMouseEnter={e=>e.currentTarget.style.boxShadow="var(--shm)"}
-                onMouseLeave={e=>e.currentTarget.style.boxShadow="var(--sh)"}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                    <Icon n="description" s={24} c="var(--accent)"/>
-                    <div>
-                      <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15}}>{cl.name}</div>
-                      <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
-                        <Icon n="schedule" s={12} c="var(--muted)"/>{cl.due}
-                        {cl.freq&&<span style={{marginLeft:4,color:"var(--accent)",fontWeight:500}}>· {FREQ_LABEL(cl.freq,cl.days||[])}</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <SPill s={cl.st}/>
-                </div>
-                <Bar v={p} h={6}/>
-                <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12,color:"var(--sub)"}}>
-                  <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="check_circle_outline" s={14} c="var(--sub)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens</span>
-                  <span style={{fontFamily:"var(--fh)",fontWeight:700,color:p===100?"var(--accent)":"var(--text)"}}>{p}%</span>
-                </div>
-              </div>
+              <TeamClCard key={cl.id} cl={cl} p={p} isOwner={isOwner}
+                onOpen={()=>onOpenCl(cl)}
+                onEdit={isOwner&&onEditCl ? ()=>onOpenEditCl(cl) : null}
+                onDuplicate={isOwner&&onDuplicateCl ? ()=>onDuplicateCl(cl) : null}
+                onDelete={isOwner&&onDeleteCl ? ()=>onDeleteCl(cl) : null}/>
             );
           })}
         </div>
       )}
-
     </div>
-    {/* Leader modals */}
-    {showAddCl && isLeader && <AddCl staff={sectorPeers||[]} tpls={tpls||[]} onClose={()=>setShowAddCl(false)} onAdd={(tid,sid,freq,days,due)=>{if(onAddCl){onAddCl(tid,sid,freq,days,due);}setShowAddCl(false);}}/>}
+    {showAddCl && isLeader && <AddCl staff={sectorPeers||[]} tpls={tpls||[]} onClose={()=>setShowAddCl(false)} onAdd={(tid,sid,freq,days,dueTime)=>{onAddCl&&onAddCl(tid,sid,freq,days,dueTime);setShowAddCl(false);}}/>}
     </>
+  );
+}
+
+function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(()=>{
+    if(!menuOpen) return;
+    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setMenuOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[menuOpen]);
+  const MENU = [
+    onEdit     && {icon:"edit",           label:"Editar",   action:()=>{onEdit();   setMenuOpen(false);}},
+    onDuplicate&& {icon:"content_copy",   label:"Duplicar", action:()=>{onDuplicate();setMenuOpen(false);}},
+    onDelete   && {icon:"delete_outline", label:"Deletar",  action:()=>{onDelete(); setMenuOpen(false);}, red:true},
+  ].filter(Boolean);
+  return(
+    <div style={{background:"var(--surface)",border:`1.5px solid ${cl.st==="alert"?"var(--rbr)":cl.st==="done"?"var(--accent)":"var(--border)"}`,
+      borderRadius:"var(--r)",padding:"14px 16px",position:"relative",
+      boxShadow:"var(--sh)",transition:"box-shadow .15s,border-color .15s"}}
+      onMouseEnter={e=>e.currentTarget.style.boxShadow="var(--shm)"}
+      onMouseLeave={e=>e.currentTarget.style.boxShadow="var(--sh)"}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+        <div onClick={onOpen} style={{display:"flex",gap:10,alignItems:"center",flex:1,minWidth:0,cursor:"pointer"}}>
+          <Icon n="description" s={24} c="var(--accent)" style={{flexShrink:0}}/>
+          <div style={{minWidth:0}}>
+            <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{cl.name}</div>
+            <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
+              <Icon n="schedule" s={12} c="var(--muted)"/>{cl.due}
+              {cl.freq&&<span style={{marginLeft:4,color:"var(--accent)",fontWeight:500}}>· {FREQ_LABEL(cl.freq,cl.days||[])}</span>}
+            </div>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+          <SPill s={cl.st}/>
+          {/* 3-dot menu — only for leader-owned checklists */}
+          {isOwner && MENU.length>0 && (
+            <div ref={ref} style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
+              <button onClick={()=>setMenuOpen(o=>!o)}
+                style={{background:menuOpen?"var(--abg)":"none",border:"1px solid "+(menuOpen?"var(--accent)":"transparent"),
+                  borderRadius:6,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",
+                  cursor:"pointer",transition:"all .15s",color:menuOpen?"var(--accent)":"var(--muted)"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="var(--bg)";e.currentTarget.style.borderColor="var(--border2)"}}
+                onMouseLeave={e=>{if(!menuOpen){e.currentTarget.style.background="none";e.currentTarget.style.borderColor="transparent"}}}>
+                <Icon n="more_vert" s={18}/>
+              </button>
+              {menuOpen&&(
+                <div style={{position:"absolute",top:"calc(100% + 4px)",right:0,background:"var(--surface)",
+                  border:"1px solid var(--border)",borderRadius:"var(--r)",boxShadow:"var(--shm)",
+                  minWidth:160,zIndex:200,overflow:"hidden"}}>
+                  {MENU.map((item,i)=>(
+                    <button key={i} onClick={item.action}
+                      style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 14px",
+                        background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:500,
+                        color:item.red?"var(--red)":"var(--text)",textAlign:"left",transition:"background .1s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background=item.red?"var(--rbg)":"var(--bg)"}
+                      onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                      <Icon n={item.icon} s={16} c={item.red?"var(--red)":"var(--sub)"}/>{item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div onClick={onOpen} style={{cursor:"pointer"}}>
+        <Bar v={p} h={6}/>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12,color:"var(--sub)"}}>
+          <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="check_circle_outline" s={14} c="var(--muted)"/>{cl.items.filter(i=>i.done).length}/{cl.items.length} itens</span>
+          <span style={{fontFamily:"var(--fh)",fontWeight:700,color:p===100?"var(--accent)":"var(--text)"}}>{p}%</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1368,12 +1425,12 @@ export default function App() {
     });
   };
   const delTask   =(id)=>{ setTasks(p=>p.filter(t=>t.id!==id)); setConfirm(null); (async()=>{const r=await db.deleteTask(id);if(r?.error)console.error(r.error)})(); };
-    const addCl=(tid,sid,freq="daily",days=[],dueTime="08:00")=>{
+    const addCl=(tid,sid,freq="daily",days=[],dueTime="08:00",creatorId=null)=>{
     const tpl=tpls.find(t=>t.id===tid);if(!tpl)return;
     const now=new Date();
     const nc={id:"c"+Date.now(),tid,name:tpl.name,icon:tpl.icon,sid,
       due:`hoje ${dueTime}`,st:"pending",
-      freq,days,dueTime,
+      freq,days,dueTime,createdBySid:creatorId,
       lastReset:now.toDateString(),
       overdueAlertSent:false,
       items:tpl.items.map((t,i)=>mk(`x${Date.now()}_${i}`,t))};
@@ -1434,7 +1491,10 @@ export default function App() {
       isLeader={isLeader} sectorPeers={sectorPeers} tpls={tpls}
       onToggle={toggleItem} onEv={setEv} onDelEv={delEv} onTogEv={togEv}
       onToggleTask={toggleTask}
-      onAddCl={isLeader?(tid,sid,freq,days,dueTime)=>addCl(tid,sid,freq,days,dueTime):null}
+      onAddCl={isLeader?(tid,sid,freq,days,dueTime)=>addCl(tid,sid,freq,days,dueTime,session.user.id):null}
+      onEditCl={isLeader?editCl:null}
+      onDeleteCl={isLeader?(cl)=>{setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente.`})}:null}
+      onDuplicateCl={isLeader?duplicateCl:null}
       onAddTask={(task)=>addTask({...task,createdBySid:session.user.id})}
       onDelTask={(id)=>{if(window.confirm("Deletar esta tarefa?"))delTask(id);}}
       onMarkAlertRead={(id)=>{ setAlerts(p=>p.map(a=>{ if(a.id!==id) return a; const u={...a,read:true}; (async()=>{const r=await db.upsertAlert(u);if(r?.error)console.error(r.error)})(); return u; })); }}

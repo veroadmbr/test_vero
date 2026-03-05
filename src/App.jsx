@@ -527,18 +527,6 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
           <Icon n="person_add" s={18}/>Criar nova conta
         </button>
 
-        {/* Demo credentials hint */}
-        <div style={{ marginTop:20, background:"var(--bg)", border:"1px solid var(--border)", borderRadius:"var(--rs)", padding:"12px 14px", fontSize:12, color:"var(--muted)" }}>
-          <div style={{ fontWeight:600, color:"var(--sub)", marginBottom:6, display:"flex", alignItems:"center", gap:5 }}>
-            <Icon n="info" s={14} c="var(--muted)"/>Credenciais de demonstração
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px 16px" }}>
-            <span>ana@vero.com</span><span style={{color:"var(--text)",fontWeight:500}}>admin123</span>
-            <span>carlos@vero.com</span><span style={{color:"var(--text)",fontWeight:500}}>carlos123</span>
-            <span>beatriz@vero.com</span><span style={{color:"var(--text)",fontWeight:500}}>beatriz123</span>
-            <span>diego@vero.com</span><span style={{color:"var(--text)",fontWeight:500}}>diego123</span>
-          </div>
-        </div>
       </div>
     </div>
   );

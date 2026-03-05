@@ -1633,7 +1633,7 @@ export default function App() {
         <div className="ma">
           {page==="dashboard"  && <Dash  cls={cls} staff={staff} alerts={alerts} setPage={setPage} onOpenCl={setOpenCl} onAlert={onAlert} pending={pending} onOpenPending={()=>setPendingModal(true)}/>}
           {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
-          {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
+          {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} user={session.user} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
           {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
           {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)}/>}
           {page==="alerts"     && <Alts  alerts={alerts} onMarkAll={()=>setAlerts(p=>p.map(a=>({...a,read:true})))} onAlert={onAlert}/>}
@@ -2920,7 +2920,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
                   </div>
                 </div>
                 {/* Delete button — only for creator */}
-                {onDelTask && t.creatorId===user.id && (
+                {onDelTask && (t.createdBySid===user.id) && (
                   <button onClick={()=>onDelTask(t.id)}
                     title="Deletar tarefa"
                     style={{position:"absolute",top:10,right:10,background:"none",border:"none",cursor:"pointer",
@@ -2941,7 +2941,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
 }
 
 /* ═══ ADMIN TASKS ══════════════════════════════════════════════════════════ */
-function AdminTasks({ tasks, staff, sectors, onToggleTask, onDelTask, onAddTask }) {
+function AdminTasks({ tasks, staff, sectors, user, onToggleTask, onDelTask, onAddTask }) {
   const [filterStatus,   setFilterStatus]   = useState("all");    // all | pending | done
   const [filterSector,   setFilterSector]   = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
@@ -3253,15 +3253,17 @@ function AdminTasks({ tasks, staff, sectors, onToggleTask, onDelTask, onAddTask 
                     </div>
                   </div>
 
-                  {/* Delete */}
-                  <button onClick={()=>onDelTask(t.id)}
-                    style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",
-                      display:"flex",alignItems:"center",padding:4,borderRadius:4,
-                      transition:"all .15s",flexShrink:0}}
-                    onMouseEnter={e=>{e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
-                    onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
-                    <Icon n="delete_outline" s={18}/>
-                  </button>
+                  {/* Delete — only creator */}
+                  {onDelTask && t.createdBySid===user.id && (
+                    <button onClick={()=>onDelTask(t.id)}
+                      style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",
+                        display:"flex",alignItems:"center",padding:4,borderRadius:4,
+                        transition:"all .15s",flexShrink:0}}
+                      onMouseEnter={e=>{e.currentTarget.style.color="var(--red)";e.currentTarget.style.background="var(--rbg)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="none";}}>
+                      <Icon n="delete_outline" s={18}/>
+                    </button>
+                  )}
                 </div>
               </Card>
             );

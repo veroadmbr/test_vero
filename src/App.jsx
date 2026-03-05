@@ -2282,17 +2282,7 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
 
   const FErr = ({id})=>errors[id]?<div style={{fontSize:11,color:"var(--red)",marginTop:3,display:"flex",alignItems:"center",gap:3}}><Icon n="error_outline" s={12} c="var(--red)"/>{errors[id]}</div>:null;
 
-  const InpField = ({label,val,set,ph,type="text",id})=>(
-    <div>
-      <Lbl>{label}</Lbl>
-      <input value={val} onChange={e=>{set(e.target.value);setErrors(p=>({...p,[id]:""}));}}
-        placeholder={ph} type={type}
-        style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors[id]?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
-        onFocus={e=>e.target.style.borderColor="var(--accent)"}
-        onBlur={e=>e.target.style.borderColor=errors[id]?"var(--red)":"var(--border2)"}/>
-      <FErr id={id}/>
-    </div>
-  );
+
 
   return (
     <Ov onClick={onClose}>
@@ -2313,18 +2303,58 @@ function EditMemberModal({ member, sectors, onClose, onSave }) {
         <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:14}}>
           {/* Name row */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <InpField label="Nome *" val={firstName} set={setFirst} ph="Nome" id="firstName"/>
-            <InpField label="Sobrenome *" val={lastName} set={setLast} ph="Sobrenome" id="lastName"/>
+            <div>
+              <Lbl>Nome *</Lbl>
+              <input value={firstName} onChange={e=>{(setFirst)(e.target.value);setErrors(p=>{...p,firstName:""})}}
+                placeholder="Nome" type="text"
+                style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.firstName?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
+                onBlur={e=>e.target.style.borderColor=errors.firstName?"var(--red)":"var(--border2)"}/>
+              <FErr id="firstName"/>
+            </div>
+            <div>
+              <Lbl>Sobrenome *</Lbl>
+              <input value={lastName} onChange={e=>{(setLast)(e.target.value);setErrors(p=>{...p,lastName:""})}}
+                placeholder="Sobrenome" type="text"
+                style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.lastName?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
+                onBlur={e=>e.target.style.borderColor=errors.lastName?"var(--red)":"var(--border2)"}/>
+              <FErr id="lastName"/>
+            </div>
           </div>
 
           {/* Contact row */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <InpField label="E-mail *" val={email} set={setEmail} ph="email@exemplo.com" type="email" id="email"/>
-            <InpField label="Celular *" val={phone} set={setPhone} ph="(11) 99999-9999" id="phone"/>
+            <div>
+              <Lbl>E-mail *</Lbl>
+              <input value={email} onChange={e=>{(setEmail)(e.target.value);setErrors(p=>{...p,email:""})}}
+                placeholder="email@exemplo.com" type="email"
+                style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.email?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
+                onBlur={e=>e.target.style.borderColor=errors.email?"var(--red)":"var(--border2)"}/>
+              <FErr id="email"/>
+            </div>
+            <div>
+              <Lbl>Celular *</Lbl>
+              <input value={phone} onChange={e=>{(setPhone)(e.target.value);setErrors(p=>{...p,phone:""})}}
+                placeholder="(11) 99999-9999" type="tel"
+                style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.phone?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
+                onBlur={e=>e.target.style.borderColor=errors.phone?"var(--red)":"var(--border2)"}/>
+              <FErr id="phone"/>
+            </div>
           </div>
 
           {/* Cargo (free text) */}
-          <InpField label="Cargo / Função" val={role} set={setRole} ph="Ex: Cozinheiro, Garçom..." id="role"/>
+          <div>
+              <Lbl>Cargo / Função</Lbl>
+              <input value={role} onChange={e=>{(setRole)(e.target.value);setErrors(p=>{...p,role:""})}}
+                placeholder="Ex: Cozinheiro, Garçom..." type="text"
+                style={{width:"100%",background:"var(--bg)",border:`1px solid ${errors.role?"var(--red)":"var(--border2)"}`,borderRadius:"var(--rs)",padding:"10px 12px",color:"var(--text)",fontSize:13,outline:"none"}}
+                onFocus={e=>e.target.style.borderColor="var(--accent)"}
+                onBlur={e=>e.target.style.borderColor=errors.role?"var(--red)":"var(--border2)"}/>
+              <FErr id="role"/>
+            </div>
 
           {/* Member role — admin members can't be changed here */}
           {!member.admin&&(
@@ -2394,24 +2424,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
     (t.desc||"").toLowerCase().includes(search.toLowerCase())
   );
 
-  const TabBtn = ({id, label, count}) => (
-    <button onClick={()=>setTab(id)} style={{
-      flex:1, padding:"9px 12px", border:"none", cursor:"pointer",
-      background: tab===id ? "var(--accent)" : "var(--surface)",
-      color: tab===id ? "#fff" : "var(--sub)",
-      borderRadius:"var(--rs)", fontWeight:600, fontSize:13,
-      display:"flex", alignItems:"center", justifyContent:"center", gap:6,
-      transition:"all .15s",
-    }}>
-      {label}
-      <span style={{
-        background: tab===id ? "rgba(255,255,255,.25)" : "var(--border)",
-        color: tab===id ? "#fff" : "var(--sub)",
-        borderRadius:100, minWidth:18, height:18, fontSize:10, fontWeight:700,
-        display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px",
-      }}>{count}</span>
-    </button>
-  );
+
 
   return (
     <div className="pp fu">
@@ -2432,8 +2445,14 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
 
       {/* Tab switcher */}
       <div style={{display:"flex",gap:8,marginBottom:16}}>
-        <TabBtn id="assigned" label="Atribuídas pelo líder" count={assigned.length}/>
-        <TabBtn id="mine"     label="Minhas tarefas"        count={selfMade.length}/>
+        <button onClick={()=>setTab("assigned")} style={{flex:1,padding:"9px 12px",border:"none",cursor:"pointer",background:tab==="assigned"?"var(--accent)":"var(--surface)",color:tab==="assigned"?"#fff":"var(--sub)",borderRadius:"var(--rs)",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}>
+          Atribuídas pelo líder
+          <span style={{background:tab==="assigned"?"rgba(255,255,255,.25)":"var(--border)",color:tab==="assigned"?"#fff":"var(--sub)",borderRadius:100,minWidth:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{assigned.length}</span>
+        </button>
+        <button onClick={()=>setTab("mine")} style={{flex:1,padding:"9px 12px",border:"none",cursor:"pointer",background:tab==="mine"?"var(--accent)":"var(--surface)",color:tab==="mine"?"#fff":"var(--sub)",borderRadius:"var(--rs)",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}>
+          Minhas tarefas
+          <span style={{background:tab==="mine"?"rgba(255,255,255,.25)":"var(--border)",color:tab==="mine"?"#fff":"var(--sub)",borderRadius:100,minWidth:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{selfMade.length}</span>
+        </button>
       </div>
 
       {/* Search */}

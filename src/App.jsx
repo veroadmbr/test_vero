@@ -151,6 +151,12 @@ const NAV_ADMIN=[
   {id:"staff",label:"Equipe",icon:"group"},
   {id:"alerts",label:"Alertas",icon:"notifications"},
 ];
+const NAV_TEAM_FULL=[
+  {id:"dashboard",label:"Painel",icon:"dashboard"},
+  {id:"checklists",label:"Checklists",icon:"checklist"},
+  {id:"tasks",label:"Tarefas",icon:"task_alt"},
+  {id:"alerts",label:"Alertas",icon:"notifications"},
+];
 
 /* ─── SHARED PRIMITIVES ──────────────────────────────────────────────────── */
 const Av=({v,sz=34,bg="var(--border)",co="#4b5563"})=>(

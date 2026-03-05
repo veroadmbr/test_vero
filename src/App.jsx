@@ -629,7 +629,10 @@ const NAV_TEAM_FULL=[
 function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout }) {
   const myCls       = cls.filter(c => c.sid === user.id);
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
-  const leaderTasks = isLeader ? tasks.filter(t => t.createdBySid === user.id) : [];
+  const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
+  const leaderTasks = isLeader ? tasks.filter(t =>
+    t.createdBySid === user.id || adminStaffIds.includes(t.createdBySid)
+  ) : [];
   const myAlerts = alerts.filter(a => a.sid === user.id);
   const unread   = myAlerts.filter(a=>!a.read).length;
   const [page,   setPage]   = useState("dashboard");
@@ -2511,7 +2514,7 @@ function MyTasks({ tasks, user, onToggleTask, onAddTask, onDelTask }) {
           </p>
         </div>
         {tab==="mine" && (
-          <Btn onClick={onAddTask}><Icon n="add" s={18}/>Nova Tarefa</Btn>
+          {taskTab==="mine"&&<Btn onClick={onAddTask}><Icon n="add" s={18}/>Nova Tarefa</Btn>}
         )}
       </div>
 
@@ -2629,6 +2632,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [search,         setSearch]         = useState("");
+  const [taskTab,        setTaskTab]        = useState("mine"); // "admin" | "mine"
 
   const PRIO_MAP = {
     high:   { c:"var(--red)",    bg:"var(--rbg)",  label:"Alta",   icon:"keyboard_double_arrow_up" },
@@ -2639,7 +2643,10 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
   const getMember = id => staff.find(s=>s.id===id);
   const getSector = id => sectors.find(s=>s.id===id);
 
-  const visible = tasks.filter(t => {
+  const adminStaff = staff.filter(s => s.admin);
+  const adminIds   = adminStaff.map(s => s.id);
+
+  const applyFilters = list => list.filter(t => {
     if (filterStatus==="pending" && t.done)  return false;
     if (filterStatus==="done"    && !t.done) return false;
     if (filterPriority && t.priority!==filterPriority) return false;
@@ -2652,6 +2659,10 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
     }
     return true;
   });
+
+  const adminTasks  = applyFilters(tasks.filter(t => adminIds.includes(t.createdBySid)));
+  const myTasks     = applyFilters(tasks.filter(t => t.createdBySid === user.id));
+  const visible     = taskTab === "admin" ? adminTasks : myTasks;
 
   const total   = tasks.length;
   const done    = tasks.filter(t=>t.done).length;
@@ -2766,6 +2777,32 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
         </div>
       </Card>
 
+      {/* Tab switcher */}
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        {[
+          {id:"mine",  label:"Minhas tarefas",            icon:"person",        count:tasks.filter(t=>t.createdBySid===user.id).length},
+          {id:"admin", label:"Atribuídas por admins",     icon:"admin_panel_settings", count:tasks.filter(t=>adminIds.includes(t.createdBySid)).length},
+        ].map(tb=>(
+          <button key={tb.id} onClick={()=>setTaskTab(tb.id)} style={{
+            flex:1, padding:"9px 12px", border:"none", cursor:"pointer",
+            background:taskTab===tb.id?"var(--accent)":"var(--surface)",
+            color:taskTab===tb.id?"#fff":"var(--sub)",
+            borderRadius:"var(--rs)", fontWeight:600, fontSize:13,
+            display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+            transition:"all .15s",
+          }}>
+            <Icon n={tb.icon} s={16} c={taskTab===tb.id?"#fff":"var(--sub)"}/>
+            {tb.label}
+            <span style={{
+              background:taskTab===tb.id?"rgba(255,255,255,.25)":"var(--border)",
+              color:taskTab===tb.id?"#fff":"var(--sub)",
+              borderRadius:100, minWidth:18, height:18, fontSize:10, fontWeight:700,
+              display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px",
+            }}>{tb.count}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Results count */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
         <div style={{fontSize:12,color:"var(--sub)"}}>
@@ -2785,10 +2822,10 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
         <div style={{textAlign:"center",padding:"48px 20px",background:"var(--surface)",border:"1.5px dashed var(--border2)",borderRadius:"var(--r)"}}>
           <Icon n="search_off" s={48} c="var(--border2)"/>
           <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"var(--muted)"}}>
-            {total===0?"Nenhuma tarefa criada ainda":"Nenhuma tarefa encontrada"}
+            {visible.length===0&&taskTab==="mine"&&myTasks.length===0?"Nenhuma tarefa criada por você":visible.length===0&&taskTab==="admin"&&adminTasks.length===0?"Nenhuma tarefa atribuída por admins":"Nenhuma tarefa encontrada"}
           </div>
           <div style={{fontSize:12,color:"var(--muted)",marginTop:4}}>
-            {total===0?"Crie tarefas na aba Checklists para atribuir à sua equipe":"Tente ajustar os filtros de busca"}
+            {taskTab==="mine"&&tasks.filter(t=>t.createdBySid===user.id).length===0?"Crie sua primeira tarefa para a equipe":"Tente ajustar os filtros de busca"}
           </div>
           {total>0&&activeFilters>0&&(
             <button onClick={clearFilters} style={{marginTop:12,background:"none",border:"none",cursor:"pointer",color:"var(--blue)",fontSize:13,fontWeight:600}}>Limpar filtros</button>

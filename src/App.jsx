@@ -108,7 +108,6 @@ const S0=[
 
 const CATS=["Operacional","Financeiro","Higiene","Seguranca","Atendimento","Estoque","Outro"];
 
-const EMOJIS=["🌅","💰","🧹","🌡️","🍽️","📦","🔥","🧊","🧴","🛒","📋","⚙️","🔍","🏪","🚿","🧂","🥩","🍳","📊","🎯"];
 
 const FREQ_OPTS=[
   {id:"daily",      label:"Diariamente",  icon:"today",          hasDays:false},
@@ -789,7 +788,7 @@ function TeamCls({ cls, onOpenCl, isLeader, sectorPeers, tpls, sectors, onAddCl,
                 onMouseLeave={e=>e.currentTarget.style.boxShadow="var(--sh)"}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                   <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                    <span style={{fontSize:24}}>{cl.icon}</span>
+                    <Icon n="description" s={24} c="var(--accent)"/>
                     <div>
                       <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15}}>{cl.name}</div>
                       <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
@@ -878,7 +877,7 @@ function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv }) {
       <Sheet onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
           <div style={{display:"flex",gap:12,alignItems:"center"}}>
-            <span style={{fontSize:28}}>{cl.icon}</span>
+            <Icon n="description" s={28} c="var(--accent)"/>
             <div>
               <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:17}}>{cl.name}</div>
               <div style={{display:"flex",alignItems:"center",gap:8,marginTop:4,flexWrap:"wrap"}}>
@@ -1596,7 +1595,7 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
                 onMouseLeave={e=>e.currentTarget.style.background=""}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <span style={{fontSize:18}}>{cl.icon}</span>
+                    <Icon n="description" s={18} c="var(--accent)"/>
                     <div><div style={{fontWeight:600,fontSize:13}}>{cl.name}</div><div style={{fontSize:11,color:"var(--muted)"}}>{m?.name}</div></div>
                   </div>
                   <SPill s={cl.st}/>
@@ -1662,7 +1661,7 @@ function Cls({cls,staff,onSel,onAdd,onDel,hlCl}){
               onMouseLeave={e=>{e.currentTarget.style.boxShadow=hl?"0 0 0 3px var(--abr)":"var(--sh)";e.currentTarget.style.borderColor=hl?"var(--accent)":cl.st==="alert"?"var(--rbr)":"var(--border)";}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <div style={{display:"flex",gap:10,alignItems:"center",flex:1,minWidth:0}}>
-                  <span style={{fontSize:22,flexShrink:0}}>{cl.icon}</span>
+                  <Icon n="description" s={22} c="var(--accent)" style={{flexShrink:0}}/>
                   <div style={{minWidth:0}}>
                     <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{cl.name}</div>
                     <div style={{fontSize:11,color:"var(--muted)",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
@@ -1726,7 +1725,7 @@ function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onT
       <Sheet onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
           <div style={{display:"flex",gap:12,alignItems:"center"}}>
-            <span style={{fontSize:28}}>{cl.icon}</span>
+            <Icon n="description" s={28} c="var(--accent)"/>
             <div>
               <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:17}}>{cl.name}</div>
               <div style={{display:"flex",alignItems:"center",gap:8,marginTop:4,flexWrap:"wrap"}}>
@@ -3157,8 +3156,8 @@ function AdminTasks({ tasks, staff, sectors, user, onToggleTask, onDelTask, onAd
                     </div>
                   </div>
 
-                  {/* Delete — only creator */}
-                  {onDelTask && t.createdBySid===user.id && (
+                  {/* Delete — admin can delete any task */}
+                  {onDelTask && (
                     <button onClick={()=>onDelTask(t.id)}
                       style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",
                         display:"flex",alignItems:"center",padding:4,borderRadius:4,
@@ -3318,7 +3317,7 @@ function AddCl({staff,tpls,pre,onClose,onAdd}){
 
         <Lbl>Template</Lbl>
         <Sel val={tid} onChange={e=>setTid(e.target.value)}>
-          {tpls.map(t=><option key={t.id} value={t.id}>{t.icon} {t.name}</option>)}
+          {tpls.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
         </Sel>
         {tpl&&(
           <div style={{marginTop:8,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:"var(--rs)",padding:"10px 12px"}}>
@@ -3409,10 +3408,8 @@ function AddCl({staff,tpls,pre,onClose,onAdd}){
 /* ═══ NEW TEMPLATE ══════════════════════════════════════════════════════════ */
 function NewTpl({onClose,onCreate}){
   const [name,setName]=useState("");
-  const [icon,setIcon]=useState("📋");
   const [cat,setCat]=useState("Operacional");
   const [items,setItems]=useState(["",""]);
-  const [picker,setPicker]=useState(false);
   const setIt=(i,v)=>setItems(p=>p.map((x,idx)=>idx===i?v:x));
   const addRow=()=>setItems(p=>[...p,""]);
   const remRow=i=>setItems(p=>p.filter((_,idx)=>idx!==i));
@@ -3423,24 +3420,9 @@ function NewTpl({onClose,onCreate}){
         <div style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:18,marginBottom:18,display:"flex",alignItems:"center",gap:8}}>
           <Icon n="view_quilt" s={22} c="var(--accent)"/>Novo Template
         </div>
-        <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
-          <div>
-            <Lbl>Icone</Lbl>
-            <button onClick={()=>setPicker(!picker)} style={{marginTop:5,fontSize:22,background:"var(--bg)",border:"1px solid var(--border2)",borderRadius:"var(--rs)",padding:"9px 13px",cursor:"pointer"}}>{icon}</button>
-          </div>
-          <div style={{flex:1}}>
-            <Lbl>Nome</Lbl>
-            <Inp val={name} onChange={e=>setName(e.target.value)} ph="Ex: Pre-abertura do bar"/>
-          </div>
-        </div>
-        {picker&&(
-          <div style={{marginTop:10,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:"var(--rs)",padding:12,display:"flex",flexWrap:"wrap",gap:6}}>
-            {EMOJIS.map(ic=>(
-              <button key={ic} onClick={()=>{setIcon(ic);setPicker(false);}} style={{fontSize:20,background:icon===ic?"var(--abg)":"none",border:icon===ic?"1px solid var(--accent)":"1px solid transparent",borderRadius:6,padding:"4px 7px",cursor:"pointer"}}>{ic}</button>
-            ))}
-          </div>
-        )}
-        <Lbl>Categoria</Lbl>
+        <Lbl>Nome</Lbl>
+        <Inp val={name} onChange={e=>setName(e.target.value)} ph="Ex: Pre-abertura do bar"/>
+                <Lbl>Categoria</Lbl>
         <Sel val={cat} onChange={e=>setCat(e.target.value)}>
           {CATS.map(c=><option key={c}>{c}</option>)}
         </Sel>
@@ -3459,7 +3441,7 @@ function NewTpl({onClose,onCreate}){
             <Icon n="add" s={20}/>Adicionar item
           </button>
         </div>
-        <Btn onClick={()=>valid&&onCreate({name:name.trim(),icon,cat,items:items.filter(i=>i.trim())})} dis={!valid} style={{width:"100%",justifyContent:"center",marginTop:22,padding:"13px"}}>
+        <Btn onClick={()=>valid&&onCreate({name:name.trim(),icon:"description",cat,items:items.filter(i=>i.trim())})} dis={!valid} style={{width:"100%",justifyContent:"center",marginTop:22,padding:"13px"}}>
           <Icon n="check" s={20}/>Criar Template
         </Btn>
       </Sheet>

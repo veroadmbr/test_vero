@@ -1615,7 +1615,7 @@ export default function App() {
           {page==="checklists" && <Cls   cls={cls} staff={staff} onSel={setOpenCl} onAdd={()=>setAddClM({})} onEdit={cl=>setEditClM(cl)} onDuplicate={duplicateCl} onDel={cl=>setConfirm({type:"cl",id:cl.id,msg:`"${cl.name}" será deletado permanentemente. Esta ação não pode ser desfeita.`})} hlCl={hlCl}/>}
           {page==="tasks"      && <AdminTasks tasks={tasks} staff={staff} sectors={sectors} user={session.user} onToggleTask={toggleTask} onDelTask={id=>setConfirm({type:"task",id,msg:"Esta tarefa será deletada permanentemente."})} onAddTask={()=>setAddTaskM(true)}/>}
           {page==="templates"  && <Tpls  tpls={tpls} onUse={id=>setAddClM({tid:id})} onEdit={t=>setEditTplM(t)} onDuplicate={duplicateTpl} onDel={t=>setConfirm({type:"tpl",id:t.id,msg:`"${t.name}" será deletado permanentemente.`})} onNew={()=>setNewTplM(true)}/>}
-          {page==="staff"      && <Staff staff={staff} cls={cls} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)} onDeleteMember={m=>setDeleteMemberModal(m)}/>}
+          {page==="staff"      && <Staff staff={staff} cls={cls} tasks={tasks} sectors={sectors} pending={pending} onOpenPending={()=>setPendingModal(true)} onEditMember={m=>setEditMemberM(m)} onOpenSectors={()=>setSectorsM(true)} onDeleteMember={m=>setDeleteMemberModal(m)}/>}
           {page==="alerts"     && <Alts  alerts={alerts} onMarkAll={()=>setAlerts(p=>p.map(a=>({...a,read:true})))} onAlert={onAlert}/>}
         </div>
 
@@ -2129,7 +2129,7 @@ function Tpls({tpls,onUse,onDel,onEdit,onDuplicate,onNew}){
 }
 
 /* ═══ STAFF ═════════════════════════════════════════════════════════════════*/
-function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onDeleteMember, onOpenSectors }) {
+function Staff({ staff, cls, tasks, sectors, pending, onOpenPending, onEditMember, onDeleteMember, onOpenSectors }) {
   const ranked  = [...staff].filter(s=>s.status!=="pending").sort((a,b)=>b.score-a.score);
   const MROLE   = { admin:"Admin", leader:"Líder", base:"Equipe Base", team:"Equipe" };
   const MCOLOR  = { admin:{c:"var(--accent)",bg:"var(--abg)"}, leader:{c:"var(--blue)",bg:"var(--bbg)"}, base:{c:"var(--sub)",bg:"var(--bg)"}, team:{c:"var(--sub)",bg:"var(--bg)"} };
@@ -2213,9 +2213,10 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onDe
           const done = mc.filter(c=>c.st==="done").length;
           const mr   = safeMColor(s.memberRole);
           const sec  = sectors.find(x=>x.id===s.sector);
+          const pendingTasks = (tasks||[]).filter(t=>t.sid===s.id&&!t.done).length;
           return(
             <Card key={s.id} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",animation:`fadeUp ${.15+i*.04}s ease`}}>
-              <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:15,color:"var(--muted)",width:22,textAlign:"center"}}>#{i+1}</span>
+              
               <Av v={s.av} sz={40} bg={i===0?"#fefce8":"var(--surface)"} co={i===0?"#854d0e":"#4b5563"}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,flexWrap:"wrap"}}>
@@ -2228,9 +2229,12 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onDe
                   <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="mail_outline" s={12} c="var(--muted)"/>{s.email}</span>
                   <span style={{display:"flex",alignItems:"center",gap:3}}><Icon n="task_alt" s={13} c="var(--muted)"/>{done} concluídos</span>
                 </div>
-                <Bar v={s.score}/>
+                
               </div>
-              <span style={{fontFamily:"var(--fh)",fontWeight:600,fontSize:24,color:s.score>=80?"var(--accent)":s.score>=60?"var(--warn)":"var(--red)",flexShrink:0}}>{s.score}</span>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginLeft:8}}>
+                <span style={{fontFamily:"var(--fh)",fontWeight:700,fontSize:22,color:pendingTasks>0?"var(--warn)":"var(--accent)",lineHeight:1}}>{pendingTasks}</span>
+                <span style={{fontSize:10,color:"var(--muted)",fontWeight:500,marginTop:2}}>pendentes</span>
+              </div>
               <button onClick={()=>onEditMember(s)}
                 style={{background:"var(--bg)",border:"1px solid var(--border2)",borderRadius:"var(--rs)",padding:"7px 12px",cursor:"pointer",color:"var(--sub)",display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:500,transition:"all .15s",flexShrink:0}}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--abg)";}}

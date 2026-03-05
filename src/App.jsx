@@ -1320,6 +1320,9 @@ export default function App() {
           db.getStaff(), db.getChecklists(), db.getTemplates(),
           db.getAlerts(), db.getSectors(), db.getTasks(),
         ]);
+        console.log('DB LOAD - tasks:', tasksRes.data?.length, tasksRes.error);
+        console.log('DB LOAD - alerts:', alertsRes.data?.length, alertsRes.error);
+        console.log('DB LOAD - task sample:', tasksRes.data?.[0]);
         if (staffRes.error)   throw staffRes.error;
         if (clsRes.error)     throw clsRes.error;
         if (tplsRes.error)    throw tplsRes.error;
@@ -1332,6 +1335,7 @@ export default function App() {
         setAlerts(  alertsRes.data.map(fromDbAlert));
         setSectors( sectorsRes.data.map(fromDbSector));
         setTasks(   tasksRes.data.map(fromDbTask));
+        console.log('DB LOAD - tasks mapped:', tasksRes.data.map(fromDbTask));
       } catch (e) {
         console.error('DB load error:', e);
         setDbError(e.message || 'Erro ao conectar com o banco de dados.');
@@ -1486,7 +1490,8 @@ export default function App() {
     setTasks(p=>[nt,...p]);
     setAlerts(p=>[al,...p]);
     setAddTaskM(false);
-    db.upsertTask(nt).catch(console.error);
+    console.log('addTask - saving to DB:', nt);
+    db.upsertTask(nt).then(r=>console.log('upsertTask result:', r)).catch(console.error);
     db.upsertAlert(al).catch(console.error);
   };
   const toggleTask=(id)=>{

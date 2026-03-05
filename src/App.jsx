@@ -1095,8 +1095,8 @@ function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv, readOnly 
           ))}
         </div>
       </Sheet>
+      {lightSrc&&<LightBox src={lightSrc} onClose={()=>setLightSrc(null)}/>}
     </Ov>
-    </>
   );
 }
 
@@ -1189,7 +1189,6 @@ function PendingModal({ pending, onApprove, onReject, onClose }) {
           </div>
         )}
         </Sheet>
-      {lightSrc&&<LightBox src={lightSrc} onClose={()=>setLightSrc(null)}/>}
     </Ov>
   );
 }

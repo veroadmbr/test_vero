@@ -555,7 +555,10 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 }
 
 function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, staff, tpls, onToggle, onEv, onDelEv, onTogEv, onToggleTask, onAddCl, onAddTask, onDelTask, onLogout, onEditCl, onDeleteCl, onDuplicateCl }) {
-  const myCls       = cls.filter(c => c.sid === user.id);
+  const sectorPeerIds = sectorPeers ? sectorPeers.map(s=>s.id) : [user.id];
+  const myCls       = isLeader
+    ? cls.filter(c => sectorPeerIds.includes(c.sid) || c.createdBySid === user.id)
+    : cls.filter(c => c.sid === user.id);
   const myTasks     = tasks.filter(t => t.sid === user.id || t.createdBySid === user.id);
   const adminStaffIds = staff.filter(s=>s.admin).map(s=>s.id);
   const leaderTasks = isLeader ? tasks.filter(t =>
@@ -782,7 +785,7 @@ function TeamCls({ cls, user, onOpenCl, isLeader, sectorPeers, tpls, sectors, on
         <div style={{marginBottom:32,display:"flex",flexDirection:"column",gap:10}}>
           {list.map((cl)=>{
             const p   = pct(cl.items);
-            const isOwner = isLeader && cl.createdBySid === user.id;
+            const isOwner = isLeader && (cl.createdBySid === user.id || (!cl.createdBySid && cl.sid === user.id));
             return(
               <TeamClCard key={cl.id} cl={cl} p={p} isOwner={isOwner}
                 onOpen={()=>onOpenCl(cl)}

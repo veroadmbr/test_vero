@@ -455,19 +455,34 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 
   const reset = (m) => { setMode(m); setEmail(""); setPass(""); setErr(""); setShowP(false); };
 
-  const submit = () => {
+  const submit = async () => {
     if (!email || !password) { setErr("Preencha e-mail e senha."); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const list = mode === "admin" ? admins : team;
-      const user = list.find(s => s.email.toLowerCase() === email.trim().toLowerCase() && s.password === password);
-      if (user) {
-        onLogin({ role: mode === "admin" ? "admin" : (user.memberRole==="leader" ? "leader" : "team"), user });
-      } else {
-        setErr("E-mail ou senha incorretos.");
-      }
-    }, 600);
+    try {
+      // Query DB directly to always get fresh password (bypasses stale allStaff state)
+      const { data, error } = await import("./supabase").then(m =>
+        m.supabase.from("staff").select("*")
+          .eq("email", email.trim().toLowerCase())
+          .eq("status", "approved")
+          .single()
+      );
+      if (error || !data) { setErr("E-mail ou senha incorretos."); setLoading(false); return; }
+      if (data.password !== password) { setErr("E-mail ou senha incorretos."); setLoading(false); return; }
+      // Check mode matches
+      if (mode === "admin" && !data.admin) { setErr("Esta conta não tem acesso de administrador."); setLoading(false); return; }
+      if (mode === "team"  &&  data.admin) { setErr("Use o acesso de Administrador para esta conta."); setLoading(false); return; }
+      // Build user object from DB row
+      const user = {
+        id: data.id, name: data.name, firstName: data.first_name, lastName: data.last_name,
+        email: data.email, phone: data.phone, role: data.role, av: data.av,
+        score: data.score, admin: data.admin, status: data.status, password: data.password,
+        memberRole: data.member_role, sector: data.sector,
+      };
+      onLogin({ role: mode === "admin" ? "admin" : (user.memberRole==="leader" ? "leader" : "team"), user });
+    } catch(e) {
+      setErr("Erro de conexão. Tente novamente.");
+    }
+    setLoading(false);
   };
 
   const handleKey = (e) => { if (e.key === "Enter") submit(); };

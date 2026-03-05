@@ -910,7 +910,7 @@ function TeamAlerts({ alerts }) {
 }
 
 /* ─── TEAM CHECKLIST DETAIL (with photo evidence) ───────────────────────── */
-function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv }) {
+function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv, readOnly }) {
   const [evFor, setEvFor]   = useState(null);  // item.id being evidenced
   const [evText,setEvText]  = useState("");
   const [evImg, setEvImg]   = useState(null);  // base64 string

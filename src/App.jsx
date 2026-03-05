@@ -207,6 +207,27 @@ const Confirm=({msg,onOk,onCancel})=>(
 );
 
 
+/* ── LightBox ──────────────────────────────────────────────────────────── */
+const LightBox = ({src, onClose}) => (
+  <div onClick={onClose} style={{
+    position:"fixed",inset:0,background:"rgba(0,0,0,.88)",zIndex:9999,
+    display:"flex",alignItems:"center",justifyContent:"center",cursor:"zoom-out",
+    padding:16,
+  }}>
+    <div onClick={e=>e.stopPropagation()} style={{position:"relative",maxWidth:"95vw",maxHeight:"95vh"}}>
+      <img src={src} alt="evidência"
+        style={{maxWidth:"95vw",maxHeight:"90vh",objectFit:"contain",borderRadius:8,display:"block",boxShadow:"0 8px 40px rgba(0,0,0,.6)"}}/>
+      <button onClick={onClose}
+        style={{position:"absolute",top:-12,right:-12,background:"#fff",border:"none",borderRadius:"50%",
+          width:32,height:32,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+          boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
+        <Icon n="close" s={20} c="#333"/>
+      </button>
+    </div>
+  </div>
+);
+
+
 
 /* ═══ REGISTER SCREEN ════════════════════════════════════════════════════════
    Self-registration: nome, sobrenome, email, celular, senha, confirmação.
@@ -919,6 +940,7 @@ function TeamAlerts({ alerts }) {
 function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv, readOnly }) {
   const [evFor, setEvFor]   = useState(null);  // item.id being evidenced
   const [evText,setEvText]  = useState("");
+  const [lightSrc,setLightSrc] = useState(null);
   const [evImg, setEvImg]   = useState(null);  // base64 string
   const [evMode,setEvMode]  = useState("text"); // "text"|"photo"
   const p = pct(cl.items);
@@ -1060,7 +1082,7 @@ function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv, readOnly 
                     <div style={{flex:1}}>
                       <div style={{fontSize:10,color:"var(--accent)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6}}>Evidência</div>
                       {item.img&&(
-                        <img src={item.img} alt="evidence" style={{width:"100%",maxHeight:200,objectFit:"cover",borderRadius:"var(--rs)",marginBottom:6}}/>
+                        <img src={item.img} alt="evidence" onClick={()=>setLightSrc(item.img)} style={{cursor:"zoom-in",width:"100%",maxHeight:200,objectFit:"cover",borderRadius:"var(--rs)",marginBottom:6}}/>
                       )}
                       {item.et&&<div style={{fontSize:13,color:"var(--text)",lineHeight:1.5}}>{item.et}</div>}
                       {!item.img&&!item.et&&<div style={{fontSize:13,color:"var(--muted)"}}>Evidência registrada.</div>}
@@ -1074,6 +1096,7 @@ function TeamClDetail({ cl, onClose, onToggle, onEv, onDelEv, onTogEv, readOnly 
         </div>
       </Sheet>
     </Ov>
+    </>
   );
 }
 
@@ -1165,7 +1188,8 @@ function PendingModal({ pending, onApprove, onReject, onClose }) {
             <div style={{ marginTop:10, fontSize:14 }}>Todos os cadastros foram revisados.</div>
           </div>
         )}
-      </Sheet>
+        </Sheet>
+      {lightSrc&&<LightBox src={lightSrc} onClose={()=>setLightSrc(null)}/>}
     </Ov>
   );
 }
@@ -1849,6 +1873,7 @@ function Cls({cls,staff,onSel,onAdd,onEdit,onDuplicate,onDel,hlCl}){
 function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onTogEv}){
   const [eid,setEid]=useState(null);
   const [eval_,setEval]=useState("");
+  const [lightSrc,setLightSrc]=useState(null);
   const [evIn,setEvIn]=useState({});
   const [evFor,setEvFor]=useState(null);
   const [evMode,setEvMode]=useState("text");
@@ -1972,7 +1997,7 @@ function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onT
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
                     <div style={{flex:1}}>
                       <div style={{fontSize:10,color:"var(--accent)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6}}>Evidência</div>
-                      {item.img&&<img src={item.img} alt="evidence" style={{width:"100%",maxHeight:200,objectFit:"cover",borderRadius:"var(--rs)",marginBottom:8}}/>}
+                      {item.img&&<img src={item.img} alt="evidence" onClick={()=>setLightSrc(item.img)} style={{width:"100%",maxHeight:200,objectFit:"cover",borderRadius:"var(--rs)",marginBottom:8,cursor:"zoom-in"}}/>}
                       {item.et&&<div style={{fontSize:13,color:"var(--text)",lineHeight:1.5}}>{item.et}</div>}
                     </div>
                     <Btn sz="s" v="d" onClick={()=>onDelEv(item.id)}><Icon n="delete_outline" s={20}/></Btn>
@@ -2000,6 +2025,7 @@ function ClDetail({cl,staff,onClose,onToggle,onEdit,onAdd,onRem,onEv,onDelEv,onT
           </div>
         </div>
       </Sheet>
+      {lightSrc&&<LightBox src={lightSrc} onClose={()=>setLightSrc(null)}/>}
     </Ov>
   );
 }

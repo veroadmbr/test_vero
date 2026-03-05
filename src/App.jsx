@@ -2035,8 +2035,9 @@ function Tpls({tpls,onUse,onDel,onNew}){
 /* ═══ STAFF ═════════════════════════════════════════════════════════════════*/
 function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onOpenSectors }) {
   const ranked  = [...staff].filter(s=>s.status!=="pending").sort((a,b)=>b.score-a.score);
-  const MROLE   = { admin:"Admin", leader:"Líder", base:"Equipe Base" };
-  const MCOLOR  = { admin:{c:"var(--accent)",bg:"var(--abg)"}, leader:{c:"var(--blue)",bg:"var(--bbg)"}, base:{c:"var(--sub)",bg:"var(--bg)"} };
+  const MROLE   = { admin:"Admin", leader:"Líder", base:"Equipe Base", team:"Equipe" };
+  const MCOLOR  = { admin:{c:"var(--accent)",bg:"var(--abg)"}, leader:{c:"var(--blue)",bg:"var(--bbg)"}, base:{c:"var(--sub)",bg:"var(--bg)"}, team:{c:"var(--sub)",bg:"var(--bg)"} };
+  const safeMColor = (role) => MCOLOR[role] || MCOLOR["base"];
 
   return (
     <div className="pp fu">
@@ -2114,7 +2115,7 @@ function Staff({ staff, cls, sectors, pending, onOpenPending, onEditMember, onOp
         {ranked.map((s,i)=>{
           const mc   = cls.filter(c=>c.sid===s.id);
           const done = mc.filter(c=>c.st==="done").length;
-          const mr   = MCOLOR[s.memberRole||"base"];
+          const mr   = safeMColor(s.memberRole);
           const sec  = sectors.find(x=>x.id===s.sector);
           return(
             <Card key={s.id} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",animation:`fadeUp ${.15+i*.04}s ease`}}>

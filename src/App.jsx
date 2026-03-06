@@ -1991,6 +1991,7 @@ function ClCard({cl, staff, onSel, onEdit, onDuplicate, onDel, hlCl}){
   const MENU = [
     {icon:"edit",          label:"Editar",   action:()=>{onEdit(cl);   setOpen(false);}},
     {icon:"content_copy",  label:"Duplicar", action:()=>{onDuplicate(cl); setOpen(false);}},
+    {icon:"picture_as_pdf",label:"Exportar PDF", action:()=>{exportClPDF(cl, m?.name); setOpen(false);}, pdf:true},
     {icon:"delete_outline",label:"Deletar",  action:()=>{onDel(cl);   setOpen(false);}, red:true},
   ];
   return(
@@ -2033,10 +2034,10 @@ function ClCard({cl, staff, onSel, onEdit, onDuplicate, onDel, hlCl}){
                   <button key={i} onClick={item.action}
                     style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 14px",
                       background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:500,
-                      color:item.red?"var(--red)":"var(--text)",textAlign:"left",transition:"background .1s"}}
-                    onMouseEnter={e=>e.currentTarget.style.background=item.red?"var(--rbg)":"var(--bg)"}
+                      color:item.red?"var(--red)":item.pdf?"var(--purple, #8b2bbf)":"var(--text)",textAlign:"left",transition:"background .1s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background=item.red?"var(--rbg)":item.pdf?"#f5f0fa":"var(--bg)"}
                     onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                    <Icon n={item.icon} s={16} c={item.red?"var(--red)":"var(--sub)"}/>{item.label}
+                    <Icon n={item.icon} s={16} c={item.red?"var(--red)":item.pdf?"#8b2bbf":"var(--sub)"}/>{item.label}
                   </button>
                 ))}
               </div>

@@ -1021,7 +1021,9 @@ function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete, sta
     document.addEventListener("mousedown",h);
     return()=>document.removeEventListener("mousedown",h);
   },[menuOpen]);
+  const memberName = staff ? staff.find(s=>s.id===cl.sid)?.name : undefined;
   const MENU = [
+    {icon:"picture_as_pdf", label:"Exportar PDF", action:()=>{exportClPDF(cl, memberName); setMenuOpen(false);}, pdf:true},
     onEdit     && {icon:"edit",           label:"Editar",   action:()=>{onEdit();   setMenuOpen(false);}},
     onDuplicate&& {icon:"content_copy",   label:"Duplicar", action:()=>{onDuplicate();setMenuOpen(false);}},
     onDelete   && {icon:"delete_outline", label:"Deletar",  action:()=>{onDelete(); setMenuOpen(false);}, red:true},
@@ -1046,7 +1048,7 @@ function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete, sta
         <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
           <SPill s={cl.st}/>
           {/* 3-dot menu — only for leader-owned checklists */}
-          {isOwner && MENU.length>0 && (
+          {MENU.length>0 && (
             <div ref={ref} style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
               <button onClick={()=>setMenuOpen(o=>!o)}
                 style={{background:menuOpen?"var(--abg)":"none",border:"1px solid "+(menuOpen?"var(--accent)":"transparent"),
@@ -1064,10 +1066,10 @@ function TeamClCard({ cl, p, isOwner, onOpen, onEdit, onDuplicate, onDelete, sta
                     <button key={i} onClick={item.action}
                       style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 14px",
                         background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:500,
-                        color:item.red?"var(--red)":"var(--text)",textAlign:"left",transition:"background .1s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=item.red?"var(--rbg)":"var(--bg)"}
+                        color:item.red?"var(--red)":item.pdf?"#8b2bbf":"var(--text)",textAlign:"left",transition:"background .1s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background=item.red?"var(--rbg)":item.pdf?"#f5f0fa":"var(--bg)"}
                       onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                      <Icon n={item.icon} s={16} c={item.red?"var(--red)":"var(--sub)"}/>{item.label}
+                      <Icon n={item.icon} s={16} c={item.red?"var(--red)":item.pdf?"#8b2bbf":"var(--sub)"}/>{item.label}
                     </button>
                   ))}
                 </div>

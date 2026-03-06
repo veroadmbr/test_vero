@@ -3301,7 +3301,7 @@ function LeaderTasks({ tasks, staff, sectors, user, onToggleTask, onAddTask, onD
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         {[
           {id:"mine",  label:"Minhas tarefas",            icon:"person",        count:tasks.filter(t=>t.createdBySid===user.id).length},
-          {id:"admin", label:"Atribuídas por admins",     icon:"admin_panel_settings", count:tasks.filter(t=>adminIds.includes(t.createdBySid)).length},
+          {id:"admin", label:"Atribuídas por admins",     icon:"admin_panel_settings", count:tasks.filter(t=>adminIds.includes(t.createdBySid)||(t.sid===user.id&&!t.createdBySid)).length},
         ].map(tb=>(
           <button key={tb.id} onClick={()=>setTaskTab(tb.id)} style={{
             flex:1, padding:"9px 12px", border:"none", cursor:"pointer",

@@ -9,8 +9,8 @@ const Icon = ({ n, s = 20, c = "currentColor", style: sx }) => (
   </span>
 );
 
-/* ═══ VERO LOGO ════════════════════════════════════════════════════════════ */
-const VeroLogo = ({ height = 42 }) => {
+/* ═══ WBTECH LOGO ════════════════════════════════════════════════════════════ */
+const WBTechLogo = ({ height = 42 }) => {
   const w = Math.round(height * 5022 / 1252);
   return (
     <svg width={w} height={height} viewBox="0 0 5022 1252" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,9 +36,9 @@ const G = () => (
       --bg:#ffffff;--surface:#f5f6f8;--border:#e3e5e8;--border2:#cdd0d6;
       /* Text */
       --text:#1f1f24;--sub:#6b6f76;--muted:#9ca3af;
-      /* Primary – Preto Vero */
+      /* Primary – Preto WBTech */
       --accent:#000000;--accent-hover:#1a1a1a;--abg:#f0f0f0;--abr:#cccccc;
-      /* Secondary – Verde Vero */
+      /* Secondary – Verde WBTech */
       --sec:#39d4a3;--sec-hover:#23b889;--sbg:#e6faf5;--sbr:#6ee7d2;
       /* Success */
       --green:#22c55e;--gbg:#f0fdf4;--gbr:#bbf7d0;
@@ -96,13 +96,13 @@ const G = () => (
 const mk=(id,t,done=false,ev=null,et="",crit=false)=>({id,t,done,ev,et,crit,eo:false});
 // eslint-disable-next-line no-unused-vars
 const S0=[
-  {id:"s1",name:"Larissa Admin",  firstName:"Larissa", lastName:"Admin",   email:"larissa@vero.com",  phone:"",role:"Administradora",av:"LA",score:95,admin:true, status:"approved",password:"larissa123", memberRole:"admin",  sector:null},
-  {id:"s2",name:"Walter Admin",   firstName:"Walter",  lastName:"Admin",   email:"walter@vero.com",   phone:"",role:"Administrador",  av:"WA",score:92,admin:true, status:"approved",password:"walter123",  memberRole:"admin",  sector:null},
-  {id:"s3",name:"Jaqueline Lider",firstName:"Jaqueline",lastName:"Lider", email:"jaqueline@vero.com",phone:"",role:"Líder",          av:"JL",score:88,admin:false,status:"approved",password:"jaqueline123",memberRole:"leader", sector:"sec1"},
-  {id:"s4",name:"Victoria Lider", firstName:"Victoria",lastName:"Lider",  email:"victoria.l@vero.com",phone:"",role:"Líder",         av:"VL",score:85,admin:false,status:"approved",password:"victoria123", memberRole:"leader", sector:"sec2"},
-  {id:"s5",name:"Rafael Lider",   firstName:"Rafael",  lastName:"Lider",  email:"rafael@vero.com",   phone:"",role:"Líder",          av:"RL",score:82,admin:false,status:"approved",password:"rafael123",   memberRole:"leader", sector:"sec3"},
-  {id:"s6",name:"Anderson Equipe",firstName:"Anderson",lastName:"Equipe", email:"anderson@vero.com", phone:"",role:"Equipe",         av:"AE",score:70,admin:false,status:"approved",password:"anderson123", memberRole:"base",   sector:"sec1"},
-  {id:"s7",name:"Victoria Equipe",firstName:"Victoria",lastName:"Equipe", email:"victoria.e@vero.com",phone:"",role:"Equipe",        av:"VE",score:68,admin:false,status:"approved",password:"victoria123", memberRole:"base",   sector:"sec2"},
+  {id:"s1",name:"Larissa Admin",  firstName:"Larissa", lastName:"Admin",   email:"larissa@wbtech.com",  phone:"",role:"Administradora",av:"LA",score:95,admin:true, status:"approved",password:"larissa123", memberRole:"admin",  sector:null},
+  {id:"s2",name:"Walter Admin",   firstName:"Walter",  lastName:"Admin",   email:"walter@wbtech.com",   phone:"",role:"Administrador",  av:"WA",score:92,admin:true, status:"approved",password:"walter123",  memberRole:"admin",  sector:null},
+  {id:"s3",name:"Jaqueline Lider",firstName:"Jaqueline",lastName:"Lider", email:"jaqueline@wbtech.com",phone:"",role:"Líder",          av:"JL",score:88,admin:false,status:"approved",password:"jaqueline123",memberRole:"leader", sector:"sec1"},
+  {id:"s4",name:"Victoria Lider", firstName:"Victoria",lastName:"Lider",  email:"victoria.l@wbtech.com",phone:"",role:"Líder",         av:"VL",score:85,admin:false,status:"approved",password:"victoria123", memberRole:"leader", sector:"sec2"},
+  {id:"s5",name:"Rafael Lider",   firstName:"Rafael",  lastName:"Lider",  email:"rafael@wbtech.com",   phone:"",role:"Líder",          av:"RL",score:82,admin:false,status:"approved",password:"rafael123",   memberRole:"leader", sector:"sec3"},
+  {id:"s6",name:"Anderson Equipe",firstName:"Anderson",lastName:"Equipe", email:"anderson@wbtech.com", phone:"",role:"Equipe",         av:"AE",score:70,admin:false,status:"approved",password:"anderson123", memberRole:"base",   sector:"sec1"},
+  {id:"s7",name:"Victoria Equipe",firstName:"Victoria",lastName:"Equipe", email:"victoria.e@wbtech.com",phone:"",role:"Equipe",        av:"VE",score:68,admin:false,status:"approved",password:"victoria123", memberRole:"base",   sector:"sec2"},
 ];
 
 
@@ -499,7 +499,7 @@ function RegisterScreen({ onBack, onRegistered }) {
 
         <div style={{ marginBottom:24 }}>
           <div style={{ fontFamily:"var(--fh)", fontWeight:600, fontSize:26, marginBottom:6 }}>Criar conta</div>
-          <div style={{ fontSize:13, color:"var(--sub)" }}>Preencha seus dados para se cadastrar no Vero</div>
+          <div style={{ fontSize:13, color:"var(--sub)" }}>Preencha seus dados para se cadastrar no WBTech</div>
         </div>
 
         {/* Role toggle */}
@@ -691,9 +691,9 @@ function LoginScreen({ allStaff, onLogin, onRegister }) {
 
         <div style={{ textAlign:"center", marginBottom:36 }}>
           <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>
-            <VeroLogo height={62}/>
+            <WBTechLogo height={62}/>
           </div>
-          <div style={{ fontSize:14, color:"var(--sub)" }}>Powered by Vero</div>
+          <div style={{ fontSize:14, color:"var(--sub)" }}>Powered by WBTech</div>
         </div>
 
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -797,7 +797,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
       <div className="app">
         {/* Mobile top header */}
         <header className="mh">
-          <VeroLogo height={26}/>
+          <WBTechLogo height={26}/>
           <div style={{position:"relative"}}>
             <button onClick={()=>setUserMenu(p=>!p)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
@@ -829,7 +829,7 @@ function TeamView({ user, cls, alerts, tasks, sectors, isLeader, sectorPeers, st
         {/* Sidebar */}
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
-            <VeroLogo height={29}/>
+            <WBTechLogo height={29}/>
             <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Área da Equipe</div>
           </div>
           <Hr/>
@@ -1386,11 +1386,11 @@ export default function App() {
   const [screen,  setScreen]  = useState("login"); // "login"|"register"
   const [session, setSession] = useState(() => {
     try {
-      const saved = sessionStorage.getItem("vero_session");
+      const saved = sessionStorage.getItem("wbtech_session");
       if (!saved) return null;
       const { data, ts } = JSON.parse(saved);
       if (Date.now() - ts < 10 * 60 * 1000) return data; // 10 min
-      sessionStorage.removeItem("vero_session");
+      sessionStorage.removeItem("wbtech_session");
     } catch {}
     return null;
   });
@@ -1427,9 +1427,9 @@ export default function App() {
     if (!session) return;
     const refresh = () => {
       try {
-        const saved = sessionStorage.getItem("vero_session");
+        const saved = sessionStorage.getItem("wbtech_session");
         if (saved) {
-          sessionStorage.setItem("vero_session", JSON.stringify({data:session, ts:Date.now()}));
+          sessionStorage.setItem("wbtech_session", JSON.stringify({data:session, ts:Date.now()}));
         }
       } catch {}
     };
@@ -1684,7 +1684,7 @@ export default function App() {
     <>
       <G/>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#f0eaff 0%,#f5f6f8 60%)"}}>
-        <VeroLogo height={57}/>
+        <WBTechLogo height={57}/>
         <div style={{marginTop:24,fontSize:14,color:"var(--sub)",display:"flex",alignItems:"center",gap:8}}>
           <span style={{width:18,height:18,border:"2px solid var(--accent)",borderTopColor:"transparent",borderRadius:"50%",display:"inline-block",animation:"spin 0.8s linear infinite"}}/>
           Carregando dados...
@@ -1706,7 +1706,7 @@ export default function App() {
   if (screen==="register") return <RegisterScreen onBack={()=>setScreen("login")} onRegistered={handleRegistered}/>;
   if (!session) return <LoginScreen allStaff={staff} onLogin={s=>{
     setSession(s);
-    try { sessionStorage.setItem("vero_session", JSON.stringify({data:s, ts:Date.now()})); } catch {}
+    try { sessionStorage.setItem("wbtech_session", JSON.stringify({data:s, ts:Date.now()})); } catch {}
   }} onRegister={()=>setScreen("register")}/>;
   if (session.role==="team" || session.role==="leader") {
     const isLeader = session.role==="leader";
@@ -1716,10 +1716,10 @@ export default function App() {
       setSession(prev => ({ ...prev, user: updated }));
       setStaff(p => p.map(s => s.id === updated.id ? updated : s));
       try {
-        const saved = sessionStorage.getItem("vero_session");
+        const saved = sessionStorage.getItem("wbtech_session");
         if (saved) {
           const parsed = JSON.parse(saved);
-          sessionStorage.setItem("vero_session", JSON.stringify({ ...parsed, data: updated }));
+          sessionStorage.setItem("wbtech_session", JSON.stringify({ ...parsed, data: updated }));
         }
       } catch {}
     };
@@ -1762,7 +1762,7 @@ export default function App() {
       <div className="app">
         {/* Mobile top header — hidden on desktop via CSS */}
         <header className="mh">
-          <VeroLogo height={26}/>
+          <WBTechLogo height={26}/>
           <div style={{position:"relative"}}>
             <button onClick={()=>setUserMenu(p=>!p)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"1px solid var(--border2)",cursor:"pointer",padding:"5px 10px 5px 6px",borderRadius:100}}>
@@ -1781,7 +1781,7 @@ export default function App() {
                     <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{session.user.email}</div>
                     <div style={{fontSize:11,color:"var(--accent)",fontWeight:500,marginTop:2}}>Administrador</div>
                   </div>
-                  <button onClick={()=>{ setUserMenu(false); setSession(null); try{sessionStorage.removeItem("vero_session");}catch{} }}
+                  <button onClick={()=>{ setUserMenu(false); setSession(null); try{sessionStorage.removeItem("wbtech_session");}catch{} }}
                     style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"11px 14px",background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:13,fontWeight:600,borderRadius:"0 0 var(--rs) var(--rs)"}}>
                     <Icon n="logout" s={16} c="var(--red)"/>Sair da conta
                   </button>
@@ -1793,7 +1793,7 @@ export default function App() {
         <div className="bdy">
         <aside className="sb">
           <div style={{padding:"20px 16px 12px"}}>
-            <VeroLogo height={29}/>
+            <WBTechLogo height={29}/>
             <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Gestão Operacional</div>
           </div>
           <Hr/>
@@ -1813,7 +1813,7 @@ export default function App() {
                 <div style={{fontSize:11,color:"var(--muted)"}}>Administrador</div>
               </div>
             </div>
-            <button onClick={()=>{ setSession(null); try{sessionStorage.removeItem("vero_session");}catch{} }} style={{width:"100%",background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"7px 12px",color:"var(--red)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5,fontSize:12,fontWeight:600,transition:"opacity .15s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".8"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+            <button onClick={()=>{ setSession(null); try{sessionStorage.removeItem("wbtech_session");}catch{} }} style={{width:"100%",background:"var(--rbg)",border:"1px solid var(--rbr)",borderRadius:"var(--rs)",padding:"7px 12px",color:"var(--red)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5,fontSize:12,fontWeight:600,transition:"opacity .15s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".8"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               <Icon n="logout" s={16} c="var(--red)"/>Sair
             </button>
           </div>
@@ -1850,7 +1850,7 @@ export default function App() {
       {profileM && session && <ProfileModal user={session.user} onClose={()=>setProfileM(false)} onSave={(updated)=>{
         setSession(prev=>({...prev,user:updated}));
         setStaff(p=>p.map(s=>s.id===updated.id?updated:s));
-        try{const sv=sessionStorage.getItem("vero_session");if(sv){const pr=JSON.parse(sv);sessionStorage.setItem("vero_session",JSON.stringify({...pr,data:updated}));}}catch{}
+        try{const sv=sessionStorage.getItem("wbtech_session");if(sv){const pr=JSON.parse(sv);sessionStorage.setItem("wbtech_session",JSON.stringify({...pr,data:updated}));}}catch{}
         setProfileM(false);
       }}/>}
       {pendingModal  && pending.length > 0 && <PendingModal pending={pending} onApprove={approveMember} onReject={rejectMember} onClose={()=>setPendingModal(false)}/>}
@@ -1995,7 +1995,7 @@ function exportClPDF(cl, memberName) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(255, 255, 255);
-    doc.text("VERO", margin, 14);
+    doc.text("WBTECH", margin, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(180, 180, 180);
@@ -2082,7 +2082,7 @@ function exportClPDF(cl, memberName) {
     doc.setFontSize(7.5);
     doc.setTextColor(160, 160, 160);
     const now = new Date().toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
-    doc.text("Exportado em " + now + " via Vero Gestão Operacional", margin, y);
+    doc.text("Exportado em " + now + " via WBTech Gestão Operacional", margin, y);
     const safeName = (cl.name || "checklist").replace(/[^\w\s]/g, "").replace(/\s+/g, "_");
     doc.save(safeName + ".pdf");
   }).catch(() => alert("Erro ao gerar PDF. Tente novamente."));

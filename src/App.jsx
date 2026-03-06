@@ -1974,6 +1974,118 @@ function Dash({cls,staff,alerts,tasks,setPage,onOpenCl,onAlert,pending,onOpenPen
   );
 }
 
+/* ── exportClPDF ─────────────────────────────────────────────────────────── */
+function exportClPDF(cl, memberName) {
+  const load = () => new Promise((res, rej) => {
+    if (window.jspdf) { res(window.jspdf.jsPDF); return; }
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    s.onload = () => res(window.jspdf.jsPDF);
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+  load().then(jsPDF => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const W = 210, margin = 18, contentW = W - margin * 2;
+    let y = margin;
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, W, 22, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(255, 255, 255);
+    doc.text("VERO", margin, 14);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text("Gestão Operacional", margin, 18.5);
+    y = 34;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(20, 20, 20);
+    doc.text(cl.name || "Checklist", margin, y);
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    const meta = [];
+    if (memberName) meta.push("Responsável: " + memberName);
+    if (cl.due)     meta.push("Prazo: " + cl.due);
+    if (cl.cat)     meta.push("Categoria: " + cl.cat);
+    if (meta.length) { doc.text(meta.join("   ·   "), margin, y); y += 6; }
+    const ST = { in_progress: "Em andamento", done: "Concluído", alert: "Alerta", pending: "Pendente" };
+    const SR = { in_progress: [245,158,11], done: [34,197,94], alert: [239,68,68], pending: [156,163,175] };
+    const stLabel = ST[cl.st] || cl.st || "";
+    const stCol = SR[cl.st] || [100,100,100];
+    doc.setFillColor(...stCol);
+    const pillW = doc.getTextWidth(stLabel) + 8;
+    doc.roundedRect(margin, y, pillW, 6, 1.5, 1.5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text(stLabel, margin + 4, y + 4.2);
+    y += 12;
+    const items = cl.items || [];
+    const done = items.filter(i => i.done).length;
+    const pct2 = items.length ? Math.round(done / items.length * 100) : 0;
+    doc.setFillColor(235, 235, 235);
+    doc.roundedRect(margin, y, contentW, 5, 1, 1, "F");
+    if (pct2 > 0) { doc.setFillColor(57, 212, 163); doc.roundedRect(margin, y, contentW * pct2 / 100, 5, 1, 1, "F"); }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text(pct2 + "% concluído (" + done + "/" + items.length + " itens)", margin + contentW + 3, y + 3.8);
+    y += 12;
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, W - margin, y);
+    y += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    doc.text("ITENS DO CHECKLIST", margin, y);
+    y += 7;
+    items.forEach((item, idx) => {
+      if (y > 270) { doc.addPage(); y = margin + 8; }
+      if (idx % 2 === 0) { doc.setFillColor(249, 249, 251); doc.rect(margin, y - 4, contentW, 9, "F"); }
+      if (item.done) {
+        doc.setFillColor(57, 212, 163);
+        doc.roundedRect(margin + 1, y - 2.5, 5, 5, 1, 1, "F");
+      } else {
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(margin + 1, y - 2.5, 5, 5, 1, 1, "S");
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(item.done ? 130 : 30, item.done ? 130 : 30, item.done ? 130 : 30);
+      const text = item.t || ("Item " + (idx + 1));
+      const splitLines = doc.splitTextToSize(text, contentW - 14);
+      doc.text(splitLines, margin + 9, y + 1.2);
+      if (item.crit) {
+        doc.setFillColor(254, 242, 242);
+        doc.setDrawColor(252, 165, 165);
+        doc.roundedRect(W - margin - 16, y - 2.5, 14, 5, 1, 1, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6);
+        doc.setTextColor(239, 68, 68);
+        doc.text("CRITICO", W - margin - 13.5, y + 1.2);
+      }
+      y += splitLines.length > 1 ? 6 * splitLines.length : 9;
+    });
+    y = Math.max(y + 10, 270);
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, W - margin, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(160, 160, 160);
+    const now = new Date().toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+    doc.text("Exportado em " + now + " via Vero Gestão Operacional", margin, y);
+    const safeName = (cl.name || "checklist").replace(/[^\w\s]/g, "").replace(/\s+/g, "_");
+    doc.save(safeName + ".pdf");
+  }).catch(() => alert("Erro ao gerar PDF. Tente novamente."));
+}
+
 /* ═══ CHECKLISTS ════════════════════════════════════════════════════════════ */
 function ClCard({cl, staff, onSel, onEdit, onDuplicate, onDel, hlCl}){
   const [open, setOpen] = useState(false);
